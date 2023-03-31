@@ -1,1 +1,26 @@
-echo "Hello World"
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Parallel Sudoku Solver</title>
+  </head>
+  <body>
+    <h1>Parallel Sudoku Solver</h1>
+    <h3>Kevin Zhu (kzhu2)</h3>
+    <h3>Hao Zhang (haozhan2)</h3>
+    <p>We plan on parallelizing a sudoku solver using multiple algorithms and then comparing overall runtime performance for each approach. Approaches include breadth-first search, distributed work queue, work-stealing distributed queue (hopefully), and a constraints-solver approach (hopefully), and if time permits, a DFS approach. We plan to be coding in OpenMP and if time permits, we also will try an approach in MPI for large sudoku boards.</p>
+    <p>Sudoku varies on the compute intensity based on the approach taken to solve the board. At a classical level, it is a graph based problem, where each node is a possible sudoku board and each connecting vertex indicates which square was filled to move from one possible board to the next. Proper sudoku boards have one solution. </p>
+    <p>Initially, we need to find the possible numbers for each empty square. This can be done in parallel because we need to traverse the entire board to find the missing numbers in each row, column, and box for each square, which can be done in parallel. In the next step, the cpus can choose which empty square they want to work on. </p>
+    <p>They can all choose to work on one square or try a divide and conquer approach to work on different squares, which is more ‘trial-and-error’ focused. Another approach is Constraint Propagation (eliminate the choices of possibility of each empty square using humanic heuristic). The sudoku wiki has a series of these heuristic strategies ranging from simple to extreme strategies to solve the board. Each of these strategies has varying amounts of parallelism. While it may take extra work to check for these strategies, they may also greatly reduce and prune the search space. </p>
+    <p>The challenge of parallelizing in DFS fashion is inherently challenging. The naive method for solving Sudoku involves using backtracking to solve one square at a time and recursively, but it’s not so intuitive how to parallelize this due to the directed nature of the graph and the relational dependencies between them. Trying to parallelize over the nodes is hard because each node is dependent on the previous node. </p>
+    <p>To implement these algorithms, we plan to use a global work queue and then progress to a distributed work queue, measuring each approach against one another. How to structure the task queue can also be a challenging task since resolving one task (completing one empty square) can sometimes resolve another task (complete another square). Therefore, careful design needs to be taken in order to avoid task redundancy. </p>
+    <p>In our project, we hope to have a more concrete understanding of the parallel algorithms, possible communication overheads, and see the realization of the benefits or drawbacks of a distributed work queue structure.</p>
+    <h2>Resources</h2>
+    <p>We plan on using both the GHC and PSC machines, and may get benchmarks from either machine. The PSC machine will be important for the MPI approach(if we have the time to do it) as well as testing the scaling of our algorithm. As of now, we plan to code the entire thing ourselves starting from scratch. </p>
+    <p>We are planning to use existing sudoku datasets as our test cases listed here:
+        <ul>
+          <li>https://github.com/t-dillon/tdoku/blob/master/benchmarks/README.md</li>
+          <li>https://www.sudokuwiki.org/sudoku.htm</li>
+        </ul>
+    </p>
+  </body>
+</html>
