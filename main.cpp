@@ -76,16 +76,18 @@ private:
         size_t num_left = grid_size;
         
         for(auto val: vec) {
-            if(val < 0) {
+            if(val <= 0) {
+                //sudoku numbers are from 1 to gridsize
                 continue;
             }
             
-            if(seen[val] == false) {
-                seen[val] = true;
+            auto val_index = val - 1;
+            if(seen[val_index] == false) {
+                seen[val_index] = true;
                 num_left--;
             } else {
                 //seen more than once 
-                return std::make_pair(false, 0 );
+                return std::make_pair(false, 0);
             }
         }
         
