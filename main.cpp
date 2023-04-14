@@ -1,4 +1,7 @@
 #include <iostream>
+#include <fstream>
+#include <string>
+#include <iostream>
 #include <stdbool.h>
 #include <vector>
 #include <tuple>
@@ -184,17 +187,36 @@ public:
     }
 };
 
+int main() {
+    std::ifstream inputFile("testbench/simple-50.txt"); // open file for input
+    std::string line;
+    std::vector<Grid> all_grids;
+    dtype grid_size = 9;
 
-int main()
-{
-    std::vector<std::vector<dtype>> input {
-        {1, 4, 2, 3},
-        {2, 3, 1, 4},
-        {3, 2, 4, 1},
-        {4, 1, 3, 2}
-    };
+    if (inputFile.is_open()) { // check if file is open
+        while (std::getline(inputFile, line)) { // read lines until end of file
+            std::vector<std::vector<int>> matrix(9, std::vector<int>(9, -1));
 
-    Grid a(4, input);
+            int idx = 0;
+            for (int i = 0; i < 9; i++) {
+                for (int j = 0; j < 9; j++) {
+                    if (line[idx] != '.') {
+                        matrix[i][j] = line[idx] - '0'; // convert character to integer
+                    }
+                    idx++;
+                }
+            }
+            
+            all_grids.emplace_back(Grid(grid_size, matrix));
+        }
+        inputFile.close(); // close the file
+    }
+    else {
+        std::cerr << "Unable to open file" << std::endl;
+    }
+
+
+    Grid a = all_grids[0];
     a.display_values();
     
     int ans = a.validate();
