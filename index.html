@@ -7,6 +7,8 @@
     <h1>Parallel Sudoku Solver</h1>
     <h3>Kevin Zhu (kzhu2)</h3>
     <h3>Hao Zhang (haozhan2)</h3>
+    <h2>Our Website</h2>
+    
     <p>We plan on parallelizing a sudoku solver using multiple algorithms and then comparing overall runtime performance for each approach. Approaches include breadth-first search, distributed work queue, work-stealing distributed queue (hopefully), and a constraints-solver approach (hopefully), and if time permits, a DFS approach. We plan to be coding in OpenMP and if time permits, we also will try an approach in MPI for large sudoku boards.</p>
     <p>Sudoku varies on the compute intensity based on the approach taken to solve the board. At a classical level, it is a graph based problem, where each node is a possible sudoku board and each connecting vertex indicates which square was filled to move from one possible board to the next. Proper sudoku boards have one solution. </p>
     <p>Initially, we need to find the possible numbers for each empty square. This can be done in parallel because we need to traverse the entire board to find the missing numbers in each row, column, and box for each square, which can be done in parallel. In the next step, the cpus can choose which empty square they want to work on. </p>
