@@ -1,3 +1,4 @@
+#include <fstream>
 #include <iostream>
 #include <stdbool.h>
 #include <vector>
@@ -5,7 +6,7 @@
 #include <deque>
 
 #include <climits>
-#include <fstream>
+
 #include <cmath>
 #include <cassert>
 
