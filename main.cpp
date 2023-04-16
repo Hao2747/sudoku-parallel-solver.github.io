@@ -2,13 +2,20 @@
 #include <stdbool.h>
 #include <vector>
 #include <tuple>
+#include <deque>
 
 #include <climits>
-
+#include <fstream>
 #include <cmath>
 #include <cassert>
 
 typedef int dtype; 
+
+struct Coordinate{
+  size_t r;
+  size_t c;
+};
+typedef struct Coordinate Coordinate;
 
 class Square {
 private:
@@ -19,7 +26,7 @@ public:
     Square(): num(-1) {}
     Square(dtype val): num(val) {}
 
-    bool is_solved() { return (num < 0) ? false : true; };
+    bool is_solved() { return (num <= 0) ? false : true; };
     dtype& value() {
         return num;
     }
@@ -114,6 +121,7 @@ private:
         }
     }
 public:
+    Grid(): grid_size(0), block_len(0) {}
     Grid(size_t s) : grid_size(s), block_len((dtype)sqrt(s)), grid(s, GridRow(s)) {}
     Grid(size_t s, std::vector<std::vector<dtype>> g) : grid_size(s), block_len((dtype)sqrt(s)) {
         assert(s == g.size());
@@ -140,6 +148,19 @@ public:
         }
     }
     
+    std::vector<Coordinate> find_all_empty_cells() {
+        std::vector<Coordinate> res; 
+        for(size_t col = 0; col < grid_size; col++) {
+            for(size_t row = 0; row < grid_size; row ++) {
+                if(!grid[row][col].is_solved()) {
+                    res.emplace_back((Coordinate){.r = row, .c = col});
+                }
+            }
+        }    
+        
+        return res;
+    }
+    
     bool validate() {
         assert(block_len*block_len == grid_size);
         assert(grid.size() == grid_size);
@@ -154,9 +175,9 @@ public:
         }
         
         //checks if all cols contain all digits 
-        for(int col = 0; col < grid_size; col++) {
+        for(size_t col = 0; col < grid_size; col++) {
             std::vector<dtype> vec;
-            for(int row = 0; row < grid_size; row ++) {
+            for(size_t row = 0; row < grid_size; row ++) {
                 vec.emplace_back(grid[row][col].value());
             }
             
@@ -166,11 +187,11 @@ public:
         }
         
         //all blocks contain all the digits  
-        for(int row = 0; row < grid_size; row +=block_len) {
-            for(int col = 0; col < grid_size; col+=block_len) {
+        for(size_t row = 0; row < grid_size; row +=block_len) {
+            for(size_t col = 0; col < grid_size; col+=block_len) {
                 std::vector<dtype> vec;
-                for(int r_i = row; r_i < (row+block_len); r_i++) {
-                    for(int c_i = col; c_i < (col+block_len); c_i++) {
+                for(size_t r_i = row; r_i < (row+block_len); r_i++) {
+                    for(size_t c_i = col; c_i < (col+block_len); c_i++) {
                         vec.emplace_back(grid[r_i][c_i].value());
                     }
                 }
@@ -182,22 +203,224 @@ public:
         
         return true;
     }
+    
+    /* a copy of the validate but checks the entire grid 
+    this function is overkill and very slow... read BFS comments for TODO fix later */
+    bool is_possible() {
+        assert(block_len*block_len == grid_size);
+        assert(grid.size() == grid_size);
+        for(auto& gr: grid) { assert(gr.size() == grid_size);}
+        
+        
+        //check all rows contains all digits 
+        for(auto& g_row: grid) {
+            if(!is_possible(g_row.values())){
+                return false;
+            }
+        }
+        
+        //checks if all cols contain all digits 
+        for(size_t col = 0; col < grid_size; col++) {
+            std::vector<dtype> vec;
+            for(size_t row = 0; row < grid_size; row ++) {
+                vec.emplace_back(grid[row][col].value());
+            }
+            
+            if(!is_possible(vec)){
+                return false;
+            }
+        }
+        
+        //all blocks contain all the digits  
+        for(size_t row = 0; row < grid_size; row +=block_len) {
+            for(size_t col = 0; col < grid_size; col+=block_len) {
+                std::vector<dtype> vec;
+                for(size_t r_i = row; r_i < (row+block_len); r_i++) {
+                    for(size_t c_i = col; c_i < (col+block_len); c_i++) {
+                        vec.emplace_back(grid[r_i][c_i].value());
+                    }
+                }
+                if(!is_possible(vec)){
+                    return false;
+                }
+            }
+        }
+        
+        return true;
+    }
+    size_t size() {
+        return grid_size;
+    }
+    
+    bool empty() {
+        if(grid_size == 0) {
+            return true;
+        }
+        return false;
+    }
+    
+
+};
+
+class Solver {
+public:
+  virtual Grid seq_solve(Grid g) = 0;
+  virtual Grid par_solve(Grid g) = 0;
+  
+};
+
+class BackSolve {
+private:
+  static Grid recur_helper(Grid g, std::vector<Coordinate> coords) {
+    if(coords.empty()) {
+        if(g.validate()) {
+            return g;
+        } else {
+            return Grid();
+        }
+    }
+    
+    Coordinate c = coords.back();
+    coords.pop_back();
+    
+    for(dtype guess = 1; guess <= g.size(); guess++) {
+        g[c.r][c.c] = guess;
+        Grid ret = recur_helper(g, coords);
+        
+        if(!ret.empty()) {
+            return ret;
+        }
+    }
+    return Grid();
+  }
+public:
+  static Grid seq_solve(Grid g) {
+    std::vector<Coordinate> coords = g.find_all_empty_cells();
+    
+    return recur_helper(g, coords);
+  }
+  static Grid par_solve(Grid g) {
+    
+    //implement this later after BFS for checkpoint
+    return Grid();
+  }
+};
+
+class BFS {
+  public:
+  static Grid seq_solve(Grid g) {
+    std::vector<Coordinate> coords = g.find_all_empty_cells();
+    
+    std::deque<Grid> bfs;
+    std::deque<Grid> next_iter;
+    
+    bfs.push_back(g);
+    
+    //we will do the bfs solving by choosing one of the unsolved squres
+    //then we will find all possibilies for that square
+    //at any particular timestep, the coords is all the same
+    //pick and solve exactly one square in every full iteration of the while loop
+    while(!bfs.empty()) {
+        Grid current = bfs.front();
+        bfs.pop_front();
+        
+        next_iter.clear();
+        
+        if(!coords.empty()) {
+            //pick square 
+            Coordinate c = coords.back();
+            coords.pop_back();
+            
+            for(dtype guess = 1; guess <= g.size(); guess++) {
+                //overriding value here (should be ok)
+                current[c.r][c.c] = guess;
+                
+                //this function is not efficient and should be replaced
+                //Instead this function will be replaced by taking the current loc
+                //the row/col/and box of the location of the guess and check if its possible
+                if(current.is_possible()) {
+                    next_iter.push_back(current);
+                }
+            }
+            
+            bfs.swap(next_iter);
+        } else {
+            //no more coordinates to go through 
+            
+            if(current.validate()) {
+                return current;
+            }
+        }
+    }
+    
+    return Grid();
+  }
+  
+  static Grid par_solve(Grid g) {
+      
+      return Grid();
+  }  
+    
 };
 
 
+
+void file_to_grids(std::string filename, std::vector<Grid> &grids){
+    std::ifstream inputFile(filename); // open file for input
+    std::string line;
+    
+    dtype grid_size = 9;
+
+    if (inputFile.is_open()) { // check if file is open
+        while (std::getline(inputFile, line)) { // read lines until end of file
+            std::vector<std::vector<int>> matrix(9, std::vector<int>(9, -1));
+
+            int idx = 0;
+            for (int i = 0; i < 9; i++) {
+                for (int j = 0; j < 9; j++) {
+                    if (line[idx] != '.') {
+                        matrix[i][j] = line[idx] - '0'; // convert character to integer
+                    }
+                    idx++;
+                }
+            }
+            
+            grids.emplace_back(Grid(grid_size, matrix));
+        }
+        inputFile.close(); // close the file
+    }
+    else {
+        std::cerr << "Unable to open file" << std::endl;
+    }
+}
 int main()
 {
-    std::vector<std::vector<dtype>> input {
-        {1, 4, 2, 3},
-        {2, 3, 1, 4},
-        {3, 2, 4, 1},
-        {4, 1, 3, 2}
-    };
-
-    Grid a(4, input);
+    std::vector<Grid> all_grids;
+    file_to_grids("simple-50.txt", all_grids);
+    Grid a = all_grids[0];
     a.display_values();
     
-    int ans = a.validate();
+    
+    // std::vector<std::vector<dtype>> input {
+    //     {1, 4, 2, 3},
+    //     {2, 3, 1, 4},
+    //     {3, 2, 4, 1},
+    //     {-1, 1, 3, 2}
+    // };
+
+    // Grid a(4, input);
+    // a.display_values();
+    
+    // int ans = a.validate();
+    // std::cout << ans << std::endl;
+    
+    BackSolve b;
+    int ans;
+    Grid f = b.seq_solve(a); 
+    
+    f.display_values();
+    
+    ans = f.validate();
     std::cout << ans << std::endl;
     return 0;
 }
