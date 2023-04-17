@@ -1,20 +1,39 @@
-CXX = g++
-CXXFLAGS = -Wall -Wextra -pedantic -std=c++11 -O2
-LDFLAGS = -fopenmp
+OUTPUTDIR := bin/
 
-SRCS = main.cpp util.h grid.h
-OBJS = $(SRCS:.cpp=.o)
-EXEC = main
+CFLAGS := -std=c++14 -fvisibility=hidden -lpthread
 
+ifeq (,$(CONFIGURATION))
+	CONFIGURATION := release
+endif
+
+ifeq (debug,$(CONFIGURATION))
+CFLAGS += -g
+else
+CFLAGS += -O2 -fopenmp
+endif
+
+SOURCES := src/*.cpp
+HEADERS := src/*.h
+
+TARGETBIN := solver-$(CONFIGURATION)
+
+.SUFFIXES:
 .PHONY: all clean
 
-all: $(EXEC)
+all: $(TARGETBIN)
 
-$(EXEC): $(OBJS)
-	$(CXX) $(LDFLAGS) $(OBJS) -o $(EXEC)
+$(TARGETBIN): $(SOURCES) $(HEADERS)
+	$(CXX) -o $@ $(CFLAGS) $(SOURCES) 
 
-%.o: %.cpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+format:
+	clang-format -i src/*.cpp src/*.h
 
 clean:
-	rm -f $(OBJS) $(EXEC)
+	rm -rf ./solver-$(CONFIGURATION)
+
+
+FILES = src/*.cpp \
+		src/*.h
+
+handin.tar: $(FILES)
+	tar cvf handin.tar $(FILES)
