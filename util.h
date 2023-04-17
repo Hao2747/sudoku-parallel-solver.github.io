@@ -1,5 +1,5 @@
 #include <fstream>
-#include "main.cpp"
+#include "grid.h"
 
 
 void file_to_grids(std::string filename, std::vector<Grid> &grids){

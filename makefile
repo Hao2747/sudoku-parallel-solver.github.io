@@ -2,7 +2,7 @@ CXX = g++
 CXXFLAGS = -Wall -Wextra -pedantic -std=c++11 -O2
 LDFLAGS = -fopenmp
 
-SRCS = main.cpp util.h
+SRCS = main.cpp util.h grid.h
 OBJS = $(SRCS:.cpp=.o)
 EXEC = main
 
