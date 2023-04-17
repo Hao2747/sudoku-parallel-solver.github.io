@@ -32,18 +32,21 @@ public:
 int main()
 {
     std::vector<Grid> all_grids;
-    file_to_grids("testbench/simple-50.txt", all_grids);
-    Grid a = all_grids[0];
-    a.display_values();
+    file_to_grids("testbench/medium-100", all_grids);
+    // file_to_grids("testbench/simple-50.txt", all_grids);
 
     BFS b;
-    int ans;
-    Grid f = b.seq_solve(a); 
+    for (Grid grid: all_grids){
+Grid f = b.seq_solve(grid); 
+    int ans = f.validate();
+    if (ans == false){
+    std::cout << "This puzzle is solved incorrectly" << std::endl;
 
-    f.display_values();
+    }
+    }
     
-    ans = f.validate();
-    std::cout << ans << std::endl;
+
+    
     
     
     
