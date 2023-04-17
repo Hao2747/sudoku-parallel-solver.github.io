@@ -1,8 +1,4 @@
 #include <fstream>
-#ifndef GRID_H
-#define GRID_H
-#endif 
-
 
 void file_to_grids(std::string filename, std::vector<Grid> &grids){
     std::ifstream inputFile(filename); // open file for input
