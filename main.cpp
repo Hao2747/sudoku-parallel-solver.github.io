@@ -166,6 +166,9 @@ public:
         assert(grid.size() == grid_size);
         for(auto& gr: grid) { assert(gr.size() == grid_size);}
         
+        if(empty()) {
+            return false;
+        }
         
         //check all rows contains all digits 
         for(auto& g_row: grid) {
@@ -211,6 +214,9 @@ public:
         assert(grid.size() == grid_size);
         for(auto& gr: grid) { assert(gr.size() == grid_size);}
         
+        if(empty()) {
+            return false;
+        }
         
         //check all rows contains all digits 
         for(auto& g_row: grid) {
@@ -273,7 +279,7 @@ class BackSolve {
 private:
   static Grid recur_helper(Grid g, std::vector<Coordinate> coords) {
     if(coords.empty()) {
-        if(g.validate()) {
+     if(g.validate()) {
             return g;
         } else {
             return Grid();
@@ -282,7 +288,7 @@ private:
     
     Coordinate c = coords.back();
     coords.pop_back();
-    
+
     for(dtype guess = 1; guess <= g.size(); guess++) {
         g[c.r][c.c] = guess;
         Grid ret = recur_helper(g, coords);
@@ -311,25 +317,23 @@ class BFS {
   static Grid seq_solve(Grid g) {
     std::vector<Coordinate> coords = g.find_all_empty_cells();
     
-    std::deque<Grid> bfs;
+    std::deque<Grid> possible;
     std::deque<Grid> next_iter;
     
-    bfs.push_back(g);
+    possible.push_back(g);
     
     //we will do the bfs solving by choosing one of the unsolved squres
     //then we will find all possibilies for that square
     //at any particular timestep, the coords is all the same
     //pick and solve exactly one square in every full iteration of the while loop
-    while(!bfs.empty()) {
-        Grid current = bfs.front();
-        bfs.pop_front();
-        
+    while(!coords.empty()) {
+        Coordinate c = coords.back();
+        coords.pop_back();
         next_iter.clear();
         
-        if(!coords.empty()) {
-            //pick square 
-            Coordinate c = coords.back();
-            coords.pop_back();
+        while(!possible.empty()) {
+            Grid current = possible.front();
+            possible.pop_front();
             
             for(dtype guess = 1; guess <= g.size(); guess++) {
                 //overriding value here (should be ok)
@@ -342,18 +346,17 @@ class BFS {
                     next_iter.push_back(current);
                 }
             }
-            
-            bfs.swap(next_iter);
-        } else {
-            //no more coordinates to go through 
-            
-            if(current.validate()) {
-                return current;
-            }
         }
+        
+        possible.swap(next_iter);
     }
     
+    if(!possible.empty()) {
+        return possible[0];
+    } 
+        
     return Grid();
+    
   }
   
   static Grid par_solve(Grid g) {
