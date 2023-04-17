@@ -6,6 +6,7 @@
 
 #include <cmath>
 #include <cassert>
+#include <omp.h>
 
 
 
@@ -166,6 +167,30 @@ public:
         
         return res;
     }
+
+
+
+std::vector<Coordinate> find_all_empty_cells_parallel() {
+    std::vector<Coordinate> res; 
+    #pragma omp parallel
+    {
+        std::vector<Coordinate> private_res;
+        #pragma omp for nowait
+        for(size_t col = 0; col < grid_size; col++) {
+            for(size_t row = 0; row < grid_size; row ++) {
+                if(!grid[row][col].is_solved()) {
+                    private_res.emplace_back((Coordinate){.r = row, .c = col});
+                }
+            }
+        }    
+        #pragma omp critical
+        {
+            res.insert(res.end(), private_res.begin(), private_res.end());
+        }
+    }
+    return res;
+}
+
     
     bool validate() {
         assert(block_len*block_len == grid_size);

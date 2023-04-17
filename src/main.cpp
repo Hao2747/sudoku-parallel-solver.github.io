@@ -32,15 +32,18 @@ int main()
     // file_to_grids("testbench/medium-100", all_grids);
     file_to_grids("testbench/simple-500", all_grids);
 
+    Timer t;
+    t.reset();
     BFS b;
     for (Grid grid: all_grids){
       Grid f = b.seq_solve(grid); 
       int ans = f.validate();
       if (ans == false){
-      std::cout << "This puzzle is solved incorrectly" << std::endl;
+        std::cout << "This puzzle is solved incorrectly" << std::endl;
 
       }
     }
+    std::cout << "Puzzle was solved " << t.elapsed() << " s" << std::endl;
     
 
     
