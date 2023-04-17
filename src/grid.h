@@ -7,6 +7,14 @@
 #include <cmath>
 #include <cassert>
 
+
+
+#ifndef GRID_H
+#define GRID_H
+
+
+
+
 typedef int dtype; 
 
 struct Coordinate{
@@ -265,3 +273,7 @@ public:
     
 
 };
+
+
+
+#endif
