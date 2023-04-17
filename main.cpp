@@ -8,6 +8,9 @@
 #include <cmath>
 #include <cassert>
 
+
+#include "util.h"
+
 typedef int dtype; 
 
 class Square {
@@ -187,17 +190,18 @@ public:
 
 int main()
 {
-    std::vector<std::vector<dtype>> input {
-        {1, 4, 2, 3},
-        {2, 3, 1, 4},
-        {3, 2, 4, 1},
-        {4, 1, 3, 2}
-    };
-
-    Grid a(4, input);
+    std::vector<Grid> all_grids;
+    file_to_grids("simple-50.txt", all_grids);
+    Grid a = all_grids[0];
     a.display_values();
+
+    BFS b;
+    int ans;
+    Grid f = b.seq_solve(a); 
+
+    f.display_values();
     
-    int ans = a.validate();
+    ans = f.validate();
     std::cout << ans << std::endl;
     return 0;
 }
