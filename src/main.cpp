@@ -31,7 +31,16 @@ int main()
 {
     std::vector<Grid> all_grids;
     // file_to_grids("testbench/medium-100", all_grids);
-    file_to_grids("testbench/simple-500", all_grids);
+    // file_to_grids("testbench/simple-500", all_grids);
+    // std::vector<std::vector<dtype>> input {
+    //     {1, 4, 2, 3},
+    //     {-1, -1, 1, 4},
+    //     {-1, 2, 4, 1},
+    //     {4, 1, -1, 2}
+    // };
+
+    // Grid a(4, input);
+    // a.display_values();
 
     Timer t;
     t.reset();
@@ -45,6 +54,13 @@ int main()
 
       }
     }
+    // Grid f = b.par_solve(a); 
+    //   // Grid f = b.seq_solve(grid); 
+    //   int ans = f.validate();
+    //   if (ans == false){
+    //     std::cout << "This puzzle is solved incorrectly" << std::endl;
+
+    //   }
     std::cout << "Puzzle was solved " << t.elapsed() << " s" << std::endl;
     
 

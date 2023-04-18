@@ -61,7 +61,6 @@ public:
         std::vector<Coordinate> coords = g.find_all_empty_cells();
 
         std::deque<Grid> possible;
-        std::deque<Grid> next_iter;
 
         possible.push_back(g);
         dtype grid_size = g.size();
@@ -74,27 +73,34 @@ public:
         {
             Coordinate c = coords.back();
             coords.pop_back();
-            next_iter.clear();
+            // next_iter.clear();
 
-#pragma omp parallel default(none) shared(c, possible, grid_size) firstprivate(next_iter)
+#pragma omp parallel default(none) shared(c, possible, grid_size)
             {
+                std::deque<Grid> next_iter;
+                int tid = omp_get_thread_num();
+                    Grid private_possible;
+
                 while (true)
                 {
-                    Grid private_possible;
-#pragma omp critical(deque_front)
+// #pragma omp critical
+                    #pragma omp critical(deque_front)
                     {
                         if (!possible.empty())
                         {
                             private_possible = possible.front();
                             possible.pop_front();
+                            // printf("tid %d obtain private:, %s\n", tid, private_possible.display_values_inline().c_str());
                         }
                         else
                         {
                             private_possible = Grid();
                         }
                     }
+                    // std::cout << "tid " << tid << ": " << private_possible.display_values_inline() << std::endl;
 
-                    if (private_possible.size() == 0){
+                    if (private_possible.size() == 0)
+                    {
                         break;
                     }
                     for (dtype guess = 1; guess <= grid_size; guess++)
@@ -110,12 +116,30 @@ public:
                             next_iter.push_back(private_possible);
                         }
                     }
+                    // printf("tid %d next_iter_cnt:, %d\n", tid, next_iter.size());
+                }
+#pragma omp critical
+                // #pragma omp critical(deque_end)
+                {
+                    // printf("tid %d before insert next_iter, possible_cnt:, %d\n", tid, possible.size());
+                    // possible.insert(possible.front(), next_iter.begin(), next_iter.end());
 
-#pragma omp critical(deque_end)
+                    if (possible.empty())
+                    {
+                        // possible.insert(possible.front(), next_iter.begin(), next_iter.end());
+                        possible = std::deque<Grid>(std::make_move_iterator(next_iter.begin()), std::make_move_iterator(next_iter.end()));
+                    }
+                    else
                     {
                         possible.insert(possible.end(), next_iter.begin(), next_iter.end());
                     }
+                    // printf("tid %d after insert next_iter, possible_cnt:, %d\n", tid, possible.size());
+                    // printf("tid %d sees global possible %s\n", tid, possible[0].display_values_inline().c_str());
+
+                    // printf("hi\n");
                 }
+
+                // exit(1);
             }
         }
 

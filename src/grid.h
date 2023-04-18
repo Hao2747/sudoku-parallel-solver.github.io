@@ -155,6 +155,24 @@ public:
         }
     }
     
+    //Debug purpose
+    std::string display_values_inline() {
+        // std::cout << "Displaying Sudoku Grid" << std::endl;
+        // std::cout << "Grid Size: " << grid_size << std::endl;
+        // std::cout << "Block Len: " << block_len << std::endl;
+        
+        //TODO: Make Display a little Nicer 
+        std::string grid_string = "";
+        for(GridRow& g_row: grid) {
+            for(auto& square: g_row.vec) {
+                grid_string += std::to_string(square.value()) + " ";
+            }
+            
+        }
+            // std::cout << std::endl;
+            return grid_string;
+
+    }
     std::vector<Coordinate> find_all_empty_cells() {
         std::vector<Coordinate> res; 
         for(size_t col = 0; col < grid_size; col++) {
