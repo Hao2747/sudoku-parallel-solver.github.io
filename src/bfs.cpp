@@ -27,20 +27,20 @@ public:
 
             while (!possible.empty())
             {
-                Grid current = possible.front();
+                Grid private_possible = possible.front();
                 possible.pop_front();
 
                 for (dtype guess = 1; guess <= g.size(); guess++)
                 {
                     // overriding value here (should be ok)
-                    current[c.r][c.c] = guess;
+                    private_possible[c.r][c.c] = guess;
 
                     // this function is not efficient and should be replaced
-                    // Instead this function will be replaced by taking the current loc
+                    // Instead this function will be replaced by taking the private_possible loc
                     // the row/col/and box of the location of the guess and check if its possible
-                    if (current.is_possible())
+                    if (private_possible.is_possible())
                     {
-                        next_iter.push_back(current);
+                        next_iter.push_back(private_possible);
                     }
                 }
             }
@@ -79,39 +79,38 @@ public:
             {
                 while (true)
                 {
-#pragma omp critical (deque_front)
+                    Grid private_possible;
+#pragma omp critical(deque_front)
                     {
                         if (!possible.empty())
                         {
-                            Grid current = possible.front();
+                            private_possible = possible.front();
                             possible.pop_front();
                         }
-                        else{
+                        else
+                        {
                             break;
                         }
-                        
                     }
-                    
-                   
 
                     for (dtype guess = 1; guess <= g.size(); guess++)
                     {
                         // overriding value here (should be ok)
-                        current[c.r][c.c] = guess;
+                        private_possible[c.r][c.c] = guess;
 
                         // this function is not efficient and should be replaced
                         // Instead this function will be replaced by taking the current loc
                         // the row/col/and box of the location of the guess and check if its possible
-                        if (current.is_possible())
+                        if (private_possible.is_possible())
                         {
-                            next_iter.push_back(current);
+                            next_iter.push_back(private_possible);
                         }
                     }
-                }
 
-                #pragma omp critical (deque_end)
-                {
-                    possible.insert(possible.end(), next_iter.begin(), next_iter.end());
+#pragma omp critical(deque_end)
+                    {
+                        possible.insert(possible.end(), next_iter.begin(), next_iter.end());
+                    }
                 }
             }
         }
