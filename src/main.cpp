@@ -7,6 +7,7 @@
 #include "backsolve.cpp"
 #include "bfs.cpp"
 #include "util.h"
+#include "timing.h"
 
 
 
@@ -36,7 +37,8 @@ int main()
     t.reset();
     BFS b;
     for (Grid grid: all_grids){
-      Grid f = b.seq_solve(grid); 
+      Grid f = b.par_solve(grid); 
+      // Grid f = b.seq_solve(grid); 
       int ans = f.validate();
       if (ans == false){
         std::cout << "This puzzle is solved incorrectly" << std::endl;

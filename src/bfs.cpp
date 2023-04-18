@@ -64,6 +64,7 @@ public:
         std::deque<Grid> next_iter;
 
         possible.push_back(g);
+        dtype grid_size = g.size();
 
         // we will do the bfs solving by choosing one of the unsolved squres
         // then we will find all possibilies for that square
@@ -75,7 +76,7 @@ public:
             coords.pop_back();
             next_iter.clear();
 
-#pragma omp parallel default(none) shared(c) firstprivate(next_iter)
+#pragma omp parallel default(none) shared(c, possible, grid_size) firstprivate(next_iter)
             {
                 while (true)
                 {
@@ -89,11 +90,14 @@ public:
                         }
                         else
                         {
-                            break;
+                            private_possible = Grid();
                         }
                     }
 
-                    for (dtype guess = 1; guess <= g.size(); guess++)
+                    if (private_possible.size() == 0){
+                        break;
+                    }
+                    for (dtype guess = 1; guess <= grid_size; guess++)
                     {
                         // overriding value here (should be ok)
                         private_possible[c.r][c.c] = guess;
@@ -122,4 +126,4 @@ public:
 
         return Grid();
     }
-}
+};
