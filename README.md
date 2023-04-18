@@ -3,7 +3,7 @@
 > Kevin Zhu (kzhu2)
 > Hao Zhang (haozhan2)
 
-
+Project Proposal [here](./Project%20Proposal.pdf)
 
 # Summary
 
