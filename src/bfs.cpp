@@ -75,73 +75,56 @@ public:
             coords.pop_back();
             // next_iter.clear();
 
-#pragma omp parallel default(none) shared(c, possible, grid_size)
-            {
+            // #pragma omp parallel default(none) shared(c, possible, grid_size)
+            //             {
                 std::deque<Grid> next_iter;
-                int tid = omp_get_thread_num();
+            #pragma omp parallel for
+            for (int i = 0; i < possible.size(); i++)
+            // #pragma omp critical(deque_front)
+            {
+                // int tid = omp_get_thread_num();
                 Grid private_possible;
+                std::deque<Grid> private_next_iter;
+                private_possible = possible[i];
 
-                while (true)
+                #pragma omp parallel for
+                for (dtype guess = 1; guess <= grid_size; guess++)
                 {
-#pragma omp critical
-                    // #pragma omp critical(deque_front)
-                    {
-                        if (!possible.empty())
-                        {
-                            private_possible = possible.front();
-                            possible.pop_front();
-                            // printf("tid %d obtain private:, %s, now possible_cnt %d\n", tid, private_possible.display_values_inline().c_str(), possible.size());
-                        }
-                        else
-                        {
-                            private_possible = Grid();
-                        }
-                    }
+                    // overriding value here (should be ok)
+                    private_possible[c.r][c.c] = guess;
 
-                    if (private_possible.size() == 0)
+                    // this function is not efficient and should be replaced
+                    // Instead this function will be replaced by taking the current loc
+                    // the row/col/and box of the location of the guess and check if its possible
+                    if (private_possible.is_possible())
                     {
-                        break;
+                        // #pragma omp atomic write
+                        private_next_iter.push_back(private_possible);
                     }
-                    for (dtype guess = 1; guess <= grid_size; guess++)
-                    {
-                        // overriding value here (should be ok)
-                        private_possible[c.r][c.c] = guess;
-
-                        // this function is not efficient and should be replaced
-                        // Instead this function will be replaced by taking the current loc
-                        // the row/col/and box of the location of the guess and check if its possible
-                        if (private_possible.is_possible())
-                        {
-                            next_iter.push_back(private_possible);
-                        }
-                    }
-                    // printf("tid %d next_iter_cnt:, %d\n", tid, next_iter.size());
                 }
-#pragma omp barrier
+                // printf("tid %d next_iter_cnt:, %d\n", tid, next_iter.size());
 
-#pragma omp critical
+                #pragma omp critical
                 // #pragma omp critical(deque_end)
                 {
                     // possible.insert(possible.front(), next_iter.begin(), next_iter.end());
-                    if (!next_iter.empty())
-                    {
+                    
                         // printf("tid %d before insert next_iter, possible_cnt:, %d\n", tid, possible.size());
-                        if (possible.empty())
-                        {
-                            // possible.insert(possible.front(), next_iter.begin(), next_iter.end());
-                            possible = std::deque<Grid>(std::make_move_iterator(next_iter.begin()), std::make_move_iterator(next_iter.end()));
+                        if (next_iter.empty()){
+                            next_iter = std::deque<Grid>(std::make_move_iterator(private_next_iter.begin()), std::make_move_iterator(private_next_iter.end()));
                         }
-                        else
-                        {
-                            possible.insert(possible.end(), next_iter.begin(), next_iter.end());
+                        else{
+                             next_iter.insert(next_iter.end(), private_next_iter.begin(), private_next_iter.end());
                         }
                         // printf("tid %d after insert next_iter, possible_cnt:, %d, %s\n", tid, possible.size(), possible[0].display_values_inline().c_str(), possible.size());
-                    }
+                    
                     // printf("hi\n");
                 }
+                // }
 
                 // exit(1);
             }
+            possible.swap(next_iter);
         }
 
         if (!possible.empty())
