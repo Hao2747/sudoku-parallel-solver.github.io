@@ -70,27 +70,25 @@ public:
         // then we will find all possibilies for that square
         // at any particular timestep, the coords is all the same
         // pick and solve exactly one square in every full iteration of the while loop
+            std::deque<Grid> next_iter;
+
         while (!coords.empty())
         {
             Coordinate c = coords.back();
             coords.pop_back();
-            // next_iter.clear();
+            next_iter.clear();
 
-            // #pragma omp parallel default(none) shared(c, possible, grid_size)
-            //             {
+            
             int possible_size = possible.size();
-            std::deque<Grid> next_iter(possible_size*9);
+            next_iter.resize(possible_size * 9);
 #pragma omp parallel for
             for (int i = 0; i < possible_size; i++)
-            // #pragma omp critical(deque_front)
+           
             {
                 int tid = omp_get_thread_num();
                 Grid private_possible;
-                std::deque<Grid> private_next_iter;
                 private_possible = possible[i];
-                // int correct_guess_idx; //index of the 
-
-#pragma omp parallel for
+                
                 for (dtype guess = 1; guess <= grid_size; guess++)
                 {
                     // overriding value here (should be ok)
