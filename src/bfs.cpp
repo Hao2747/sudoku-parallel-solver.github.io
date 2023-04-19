@@ -1,5 +1,6 @@
 #include <vector>
 #include <deque>
+#include <algorithm> 
 
 #include "grid.h"
 
@@ -77,17 +78,19 @@ public:
 
             // #pragma omp parallel default(none) shared(c, possible, grid_size)
             //             {
-                std::deque<Grid> next_iter;
-            #pragma omp parallel for
-            for (int i = 0; i < possible.size(); i++)
+            int possible_size = possible.size();
+            std::deque<Grid> next_iter(possible_size*9);
+#pragma omp parallel for
+            for (int i = 0; i < possible_size; i++)
             // #pragma omp critical(deque_front)
             {
-                // int tid = omp_get_thread_num();
+                int tid = omp_get_thread_num();
                 Grid private_possible;
                 std::deque<Grid> private_next_iter;
                 private_possible = possible[i];
+                // int correct_guess_idx; //index of the 
 
-                #pragma omp parallel for
+#pragma omp parallel for
                 for (dtype guess = 1; guess <= grid_size; guess++)
                 {
                     // overriding value here (should be ok)
@@ -98,32 +101,13 @@ public:
                     // the row/col/and box of the location of the guess and check if its possible
                     if (private_possible.is_possible())
                     {
-                        // #pragma omp atomic write
-                        private_next_iter.push_back(private_possible);
+                        next_iter[tid*9+(guess-1)] =private_possible;
                     }
                 }
-                // printf("tid %d next_iter_cnt:, %d\n", tid, next_iter.size());
 
-                #pragma omp critical
-                // #pragma omp critical(deque_end)
-                {
-                    // possible.insert(possible.front(), next_iter.begin(), next_iter.end());
-                    
-                        // printf("tid %d before insert next_iter, possible_cnt:, %d\n", tid, possible.size());
-                        if (next_iter.empty()){
-                            next_iter = std::deque<Grid>(std::make_move_iterator(private_next_iter.begin()), std::make_move_iterator(private_next_iter.end()));
-                        }
-                        else{
-                             next_iter.insert(next_iter.end(), private_next_iter.begin(), private_next_iter.end());
-                        }
-                        // printf("tid %d after insert next_iter, possible_cnt:, %d, %s\n", tid, possible.size(), possible[0].display_values_inline().c_str(), possible.size());
-                    
-                    // printf("hi\n");
-                }
-                // }
-
-                // exit(1);
             }
+
+            next_iter.erase(std::remove_if(next_iter.begin(), next_iter.end(), [](Grid i){return i.empty() ;}), next_iter.end());
             possible.swap(next_iter);
         }
 
