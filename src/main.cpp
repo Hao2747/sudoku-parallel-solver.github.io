@@ -32,6 +32,7 @@ int main()
     std::vector<Grid> all_grids;
     // file_to_grids("testbench/medium-100", all_grids);
     file_to_grids("testbench/simple-500", all_grids);
+    // file_to_grids("testbench/4x4", all_grids);
     // std::vector<std::vector<dtype>> input {
     
     //     {1, 4, -1, -1},

@@ -7,9 +7,9 @@ void file_to_grids(std::string filename, std::vector<Grid> &grids){
     dtype grid_size = 0;
 
     if (inputFile.is_open()) { // check if file is open
-        while (std::getline(inputFile, line)) { // read lines until end of file
+        while (std::getline(inputFile, line, '\n')) { // read lines until end of file
             if (grid_size == 0){
-                grid_size = std::sqrt(line.length() -1); //a line has length -1 number to fill in suduku 
+                grid_size = std::sqrt(line.length()); //a line has length -1 number to fill in suduku 
                 // printf("line as %s, size as %d\n", line.c_str(), grid_size);
                 std::cout << "line as " << line  << std::endl;
                 std::cout << "size as " << grid_size << std::endl;
