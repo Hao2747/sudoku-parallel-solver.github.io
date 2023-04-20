@@ -15,7 +15,6 @@
 
 
 
-
 typedef int dtype; 
 
 struct Coordinate{

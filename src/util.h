@@ -7,6 +7,7 @@ struct StartupOptions
 {
     std::string input_file = "simple-500";
     Solver *solver = new BFS();
+    bool run_parallel = true;
 };
 
 StartupOptions parseOptions(int argc, const char **argv)
@@ -31,6 +32,13 @@ StartupOptions parseOptions(int argc, const char **argv)
                     rs.solver = new BackSolve();
                 }
             }
+        }
+
+        if ((strcmp(argv[i], "-par")) == 0){
+            rs.run_parallel = true;
+        }
+        else if ((strcmp(argv[i], "-seq")) == 0){
+            rs.run_parallel = false;
         }
     }
     return rs;
