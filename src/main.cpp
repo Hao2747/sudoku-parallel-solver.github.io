@@ -27,19 +27,14 @@ public:
 
 
 
-int main()
+int main(int argc, const char **argv)
 {
     std::vector<Grid> all_grids;
-    // file_to_grids("testbench/medium-100", all_grids);
-    file_to_grids("testbench/simple-500", all_grids);
+    StartupOptions options = parseOptions(argc, argv);
+    std::string input_file = "testbench/" + options.input_file;
+    file_to_grids(input_file, all_grids);
+    // file_to_grids("testbench/simple-500", all_grids);
     // file_to_grids("testbench/4x4", all_grids);
-    // std::vector<std::vector<dtype>> input {
-    
-    //     {1, 4, -1, -1},
-    //     {-1, -1, 1, -1},
-    //     {-1, 2, 4, 1},
-    //     {4, 1, -1, 2}
-    // };
 
     // Grid a(4, input);
     // a.display_values();
