@@ -33,10 +33,7 @@ int main()
     // file_to_grids("testbench/medium-100", all_grids);
     file_to_grids("testbench/simple-500", all_grids);
     // std::vector<std::vector<dtype>> input {
-    //     // {1, 4, 2, 3},
-    //     // {-1, -1, 1, 4},
-    //     // {-1, 2, 4, 1},
-    //     // {4, 1, -1, 2}
+    
     //     {1, 4, -1, -1},
     //     {-1, -1, 1, -1},
     //     {-1, 2, 4, 1},
