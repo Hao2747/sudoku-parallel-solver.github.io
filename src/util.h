@@ -1,5 +1,7 @@
 #include <fstream>
 #include <string.h>
+
+
 struct StartupOptions
 {
     std::string input_file = "simple-500";

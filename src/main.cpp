@@ -17,12 +17,7 @@ typedef int dtype;
 
 
 
-class Solver {
-public:
-  virtual Grid seq_solve(Grid g) = 0;
-  virtual Grid par_solve(Grid g) = 0;
-  
-};
+
 
 
 
@@ -52,7 +47,7 @@ int main(int argc, const char **argv)
     //   }
     // }
     Grid a = all_grids[0];
-    Grid f = b.par_solve(a); 
+    Grid f = b.seq_solve(a); 
       int ans = f.validate();
       f.display_values();
       if (ans == false){

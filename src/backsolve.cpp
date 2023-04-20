@@ -1,9 +1,9 @@
 #include <vector>
 
 #include "grid.h"
+#include "solver.h"
 
-
-class BackSolve {
+class BackSolve : public Solver {
 private:
   static Grid recur_helper(Grid g, std::vector<Coordinate> coords) {
     if(coords.empty()) {
@@ -28,12 +28,12 @@ private:
     return Grid();
   }
 public:
-  static Grid seq_solve(Grid g) {
+  Grid seq_solve(Grid g) override{
     std::vector<Coordinate> coords = g.find_all_empty_cells();
     
     return recur_helper(g, coords);
   }
-  static Grid par_solve(Grid g) {
+  Grid par_solve(Grid g) override{
     
     //implement this later after BFS for checkpoint
     return Grid();
