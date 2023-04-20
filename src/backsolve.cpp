@@ -30,7 +30,7 @@ private:
 public:
   Grid seq_solve(Grid g) override{
     std::vector<Coordinate> coords = g.find_all_empty_cells();
-    
+    std::cout << "Solving with Backsolve" << std::endl;
     return recur_helper(g, coords);
   }
   Grid par_solve(Grid g) override{

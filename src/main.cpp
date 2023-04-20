@@ -25,6 +25,7 @@ typedef int dtype;
 int main(int argc, const char **argv)
 {
     std::vector<Grid> all_grids;
+    Solver *solver;
     StartupOptions options = parseOptions(argc, argv);
     std::string input_file = "testbench/" + options.input_file;
     file_to_grids(input_file, all_grids);
@@ -33,10 +34,10 @@ int main(int argc, const char **argv)
 
     // Grid a(4, input);
     // a.display_values();
+    solver = options.solver;
 
     Timer t;
     t.reset();
-    BFS b;
     // for (Grid grid: all_grids){
     //   Grid f = b.par_solve(grid); 
     //   // Grid f = b.seq_solve(grid); 
@@ -47,7 +48,7 @@ int main(int argc, const char **argv)
     //   }
     // }
     Grid a = all_grids[0];
-    Grid f = b.seq_solve(a); 
+    Grid f = solver->seq_solve(a); 
       int ans = f.validate();
       f.display_values();
       if (ans == false){

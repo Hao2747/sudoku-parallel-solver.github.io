@@ -1,10 +1,12 @@
 #include <fstream>
 #include <string.h>
+#include "solver.h"
 
 
 struct StartupOptions
 {
     std::string input_file = "simple-500";
+    Solver *solver = new BFS();
 };
 
 StartupOptions parseOptions(int argc, const char **argv)
@@ -18,6 +20,16 @@ StartupOptions parseOptions(int argc, const char **argv)
             if (strcmp(argv[i], "-in") == 0)
             {
                 rs.input_file = argv[i + 1];
+            }
+
+            if (strcmp(argv[i], "-solver") == 0)
+            {
+                if (strcmp(argv[i + 1], "BFS") == 0){
+                    rs.solver = new BFS();
+                }
+                else if (strcmp(argv[i + 1], "DFS") == 0){
+                    rs.solver = new BackSolve();
+                }
             }
         }
     }
