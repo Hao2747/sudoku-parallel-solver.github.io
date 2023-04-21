@@ -39,6 +39,6 @@ int main(int argc, const char **argv)
       std::cout << "This puzzle is solved incorrectly" << std::endl;
     }
   }
-
+  std::cout << "Puzzle was solved " << t.elapsed() << " s" << std::endl;
   return 0;
 }
