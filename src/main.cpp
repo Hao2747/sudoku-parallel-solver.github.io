@@ -14,7 +14,8 @@ int main(int argc, const char **argv)
   Solver *solver;
   StartupOptions options = parseOptions(argc, argv);
   std::string input_file = "testbench/" + options.input_file;
-  file_to_grids(input_file, all_grids);
+  file_to_grids(input_file, all_grids,options.grid_cnt);
+  std::cout << all_grids.size() << " puzzles are being solved" << std::endl;
 
   solver = options.solver;
 
