@@ -33,23 +33,23 @@ int main(int argc, const char **argv)
 
   //   }
   // }
-  Grid a = all_grids[0];
   Grid solved_grid;
-  if (options.run_parallel)
+  for (Grid grid: all_grids){
+    if (options.run_parallel)
   {
-    solved_grid = solver->par_solve(a);
+    solved_grid = solver->par_solve(grid);
   }
   else
   {
-    solved_grid = solver->seq_solve(a);
+    solved_grid = solver->seq_solve(grid);
   }
-  int ans = solved_grid.validate();
-  solved_grid.display_values();
-  if (ans == false)
-  {
-    std::cout << "This puzzle is solved incorrectly" << std::endl;
+    // solved_grid = b.seq_solve(grid);
+    int ans = solved_grid.validate();
+    if (ans == false){
+      std::cout << "This puzzle is solved incorrectly" << std::endl;
+
+    }
   }
-  std::cout << "Puzzle was solved " << t.elapsed() << " s" << std::endl;
 
   return 0;
 }
