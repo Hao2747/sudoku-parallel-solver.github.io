@@ -2,16 +2,16 @@
 
 #include "grid.h"
 #include "solver.h"
-
+#include <tuple>
 class BackSolve : public Solver
 {
 private:
-  static Grid recur_helper(Grid g, std::vector<Coordinate> coords)
+   std::tuple<Grid,bool>  recur_helper(Grid g, std::vector<Coordinate> coords)
   {
     // g.display_values();
     if (coords.empty())
     {
-      return g;
+      return std::make_tuple(g,true);
     }
 
     Coordinate c = coords.back();
@@ -22,8 +22,8 @@ private:
       g[c.r][c.c] = guess;
       if (g.is_possible())
       {
-        Grid ret = recur_helper(g, coords);
-        if (ret.validate())
+        auto ret = recur_helper(g, coords);
+        if (std::get<1>(ret))
     {
       return ret;
     }
@@ -32,14 +32,14 @@ private:
 
     //if none of approach found
     g[c.r][c.c] = -1;
-    return g;
+    return std::make_tuple(g,false);
   }
 
 public:
   Grid seq_solve(Grid g) override
   {
     std::vector<Coordinate> coords = g.find_all_empty_cells();
-    return recur_helper(g, coords);
+    return std::get<0>(recur_helper(g, coords));
   }
   Grid par_solve(Grid g) override
   {
