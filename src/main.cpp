@@ -23,6 +23,7 @@ int main(int argc, const char **argv)
   t.reset();
 
   Grid solved_grid;
+  #pragma parallel for
   for (Grid grid : all_grids)
   {
     if (options.run_parallel)
