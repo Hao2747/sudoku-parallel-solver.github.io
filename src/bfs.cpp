@@ -3,11 +3,12 @@
 #include <algorithm> 
 
 #include "grid.h"
+#include "solver.h"
 
-class BFS
+class BFS : public Solver
 {
 public:
-    static Grid seq_solve(Grid g)
+    Grid seq_solve(Grid g) override
     {
         std::vector<Coordinate> coords = g.find_all_empty_cells();
 
@@ -57,7 +58,7 @@ public:
         return Grid();
     }
 
-    static Grid par_solve(Grid g)
+     Grid par_solve(Grid g) override
     {
         std::vector<Coordinate> coords = g.find_all_empty_cells();
 
