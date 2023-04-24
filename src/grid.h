@@ -244,10 +244,10 @@ public:
         
         size_t block_row_start = row - row%block_len;
         size_t block_col_start = col - col%block_len;
-        for(size_t r = block_row_start; r < (block_row_start+block_len); row +=1) {
-          for(size_t c = block_col_start; c < (block_row_start+block_len); col+=1) {
-            if(grid[r][col].is_solved()) {
-              unseen.erase(grid[r][col].value());
+        for(size_t r = block_row_start; r < (block_row_start+block_len); r++) {
+          for(size_t c = block_col_start; c < (block_row_start+block_len); c++) {
+            if(grid[r][c].is_solved()) {
+              unseen.erase(grid[r][c].value());
             }
           }
         }
