@@ -44,6 +44,7 @@ private:
       return std::make_tuple(g, true);
     }
 
+    #pragma omp parallel for
     for (dtype guess = 1; guess <= g.size(); guess++)
     {
       g[row][col] = guess;
