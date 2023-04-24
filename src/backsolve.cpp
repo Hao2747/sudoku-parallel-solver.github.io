@@ -10,6 +10,9 @@ private:
   {
     // g.display_values();
     int row, col;
+
+    // If cannot find more empty cell, puzzle is solved
+    // If can find, set row and col of first empty cell 
     if (!g.find_next_empty_cell(row, col))
     {
       return std::make_tuple(g, true);
@@ -44,7 +47,7 @@ private:
       return std::make_tuple(g, true);
     }
 
-    #pragma omp parallel for
+    // #pragma omp parallel for
     for (dtype guess = 1; guess <= g.size(); guess++)
     {
       g[row][col] = guess;
