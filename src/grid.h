@@ -7,7 +7,7 @@
 #include <cmath>
 #include <cassert>
 #include <omp.h>
-
+#include <set>
 
 
 #ifndef GRID_H
@@ -26,7 +26,7 @@ typedef struct Coordinate Coordinate;
 class Square {
 private:
     dtype num; 
-    //List of Possibilities
+    std::vector<dtype> choices_;
 
 public:
     Square(): num(-1) {}
@@ -40,6 +40,14 @@ public:
     //override = operator, so can assign value directly
     void operator= (const dtype num) {
         this->num = num;
+    }
+    
+    void set_choices(const std::vector<dtype> &c) {
+      choices_ = c;
+    }
+    
+    std::vector<dtype> choices() {
+      return choices_;
     }
 };
 
@@ -187,27 +195,68 @@ public:
 
 
 
-std::vector<Coordinate> find_all_empty_cells_parallel() {
-    std::vector<Coordinate> res; 
-    #pragma omp parallel
-    {
-        std::vector<Coordinate> private_res;
-        #pragma omp for nowait
-        for(size_t col = 0; col < grid_size; col++) {
-            for(size_t row = 0; row < grid_size; row ++) {
-                if(!grid[row][col].is_solved()) {
-                    private_res.emplace_back((Coordinate){.r = row, .c = col});
-                }
-            }
-        }    
-        #pragma omp critical
-        {
-            res.insert(res.end(), private_res.begin(), private_res.end());
-        }
+    std::vector<Coordinate> find_all_empty_cells_parallel() {
+      std::vector<Coordinate> res; 
+      #pragma omp parallel
+      {
+          std::vector<Coordinate> private_res;
+          #pragma omp for nowait
+          for(size_t col = 0; col < grid_size; col++) {
+              for(size_t row = 0; row < grid_size; row ++) {
+                  if(!grid[row][col].is_solved()) {
+                      private_res.emplace_back((Coordinate){.r = row, .c = col});
+                  }
+              }
+          }    
+          #pragma omp critical
+          {
+              res.insert(res.end(), private_res.begin(), private_res.end());
+          }
+      }
+      return res;
     }
-    return res;
-}
 
+    
+    void annotate_coords(std::vector<Coordinate> coords) {
+      std::set<dtype, std::greater<dtype>> copy;
+      
+      for(dtype i = 1; i <= grid_size; i++) { 
+        copy.insert(i);
+      } 
+
+      for(Coordinate coord: coords) {
+        std::set<dtype, std::greater<dtype>> unseen = copy;
+        
+        size_t row = coord.r; 
+        size_t col = coord.c;
+        
+        for(size_t c = 0; c < grid_size; c++) {
+          if(grid[row][c].is_solved()) {
+            unseen.erase(grid[row][c].value());
+          }
+        }
+        
+        for(size_t r = 0; r < grid_size; r++) {
+          if(grid[r][col].is_solved()) {
+            unseen.erase(grid[r][col].value());
+          }
+        }
+        
+        size_t block_row_start = row - row%block_len;
+        size_t block_col_start = col - col%block_len;
+        for(size_t r = block_row_start; r < (block_row_start+block_len); row +=1) {
+          for(size_t c = block_col_start; c < (block_row_start+block_len); col+=1) {
+            if(grid[r][col].is_solved()) {
+              unseen.erase(grid[r][col].value());
+            }
+          }
+        }
+      
+        grid[row][col].set_choices(std::vector<dtype>(unseen.begin(), unseen.end()));      
+      }
+    
+      
+    }
     
     bool validate() {
         assert(block_len*block_len == grid_size);
