@@ -2,14 +2,13 @@
 #include <string.h>
 #include "solver.h"
 
-
 struct StartupOptions
 {
     std::string input_file = "simple-500";
     Solver *solver = new BFS();
     bool run_parallel = true;
     // At most n grids is being read from the input file. -1 means read all grids from file
-    int grid_cnt = -1; 
+    int grid_cnt = -1;
 };
 
 StartupOptions parseOptions(int argc, const char **argv)
@@ -27,26 +26,34 @@ StartupOptions parseOptions(int argc, const char **argv)
 
             if (strcmp(argv[i], "-solver") == 0)
             {
-                if (strcmp(argv[i + 1], "BFS") == 0){
+                if (strcmp(argv[i + 1], "BFS") == 0)
+                {
                     rs.solver = new BFS();
+                    std::cout << "BFS solver is selected" << std::endl;
                 }
-                else if (strcmp(argv[i + 1], "DFS") == 0){
+                else if (strcmp(argv[i + 1], "DFS") == 0)
+                {
                     rs.solver = new BackSolve();
+                    std::cout << "DFS solver is selected" << std::endl;
                 }
             }
         }
 
-        if ((strcmp(argv[i], "-par")) == 0){
+        if ((strcmp(argv[i], "-par")) == 0)
+        {
             rs.run_parallel = true;
+            std::cout << "Running in parallel" << std::endl;
         }
-        else if ((strcmp(argv[i], "-seq")) == 0){
+        else if ((strcmp(argv[i], "-seq")) == 0)
+        {
             rs.run_parallel = false;
+            std::cout << "Running in sequential" << std::endl;
         }
 
         if (strcmp(argv[i], "-i") == 0)
-            {
-                rs.grid_cnt = atoi(argv[i + 1]);
-            }
+        {
+            rs.grid_cnt = atoi(argv[i + 1]);
+        }
     }
     return rs;
 }
