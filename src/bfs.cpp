@@ -8,6 +8,9 @@
 class BFS : public Solver
 {
 public:
+    BFS(){
+    std::cout << "BFS solver is selected" << std::endl;
+  }
     Grid seq_solve(Grid g) override
     {
         std::vector<Coordinate> coords = g.find_all_empty_cells();

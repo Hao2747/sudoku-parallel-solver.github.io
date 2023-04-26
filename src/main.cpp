@@ -14,31 +14,45 @@ int main(int argc, const char **argv)
   Solver *solver;
   StartupOptions options = parseOptions(argc, argv);
   std::string input_file = "testbench/" + options.input_file;
-  file_to_grids(input_file, all_grids,options.grid_cnt);
+  file_to_grids(input_file, all_grids, options.grid_cnt);
   std::cout << all_grids.size() << " puzzles are being solved" << std::endl;
 
   solver = options.solver;
 
   Timer t;
-  t.reset();
 
   Grid solved_grid;
-  for (Grid grid : all_grids)
+  std::vector<double> time_to_solve;
+  // if (options.mode == "both"){}
+  for (auto mode : options.modes)
   {
-    if (options.run_parallel)
+    t.reset();
+    for (Grid grid : all_grids)
     {
-      solved_grid = solver->par_solve(grid);
+      if (mode == "par")
+      {
+        solved_grid = solver->par_solve(grid);
+      }
+      else if (mode == "seq")
+      {
+        solved_grid = solver->seq_solve(grid);
+      }
+      int ans = solved_grid.validate();
+      if (ans == false)
+      {
+        std::cout << "This puzzle is solved incorrectly" << std::endl;
+      }
     }
-    else
-    {
-      solved_grid = solver->seq_solve(grid);
-    }
-    int ans = solved_grid.validate();
-    if (ans == false)
-    {
-      std::cout << "This puzzle is solved incorrectly" << std::endl;
-    }
+    double complete_time = t.elapsed();
+    time_to_solve.emplace_back(complete_time);
   }
-
+  if (time_to_solve.size() == 1){
+    std::cout << options.modes[0] << ": Puzzle was solved " << time_to_solve[0]<< " s" << std::endl;
+  }
+  else if (time_to_solve.size() == 2){
+    std::cout << "Sequential: Puzzle was solved " << time_to_solve[0]<< " s" << std::endl;
+    std::cout << "Parallel: Puzzle was solved " << time_to_solve[1]<< " s" << std::endl;
+    std::cout << "Speedup: " << time_to_solve[0] / time_to_solve[1] << "x" << std::endl;
+  }
   return 0;
 }

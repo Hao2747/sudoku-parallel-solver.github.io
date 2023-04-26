@@ -15,11 +15,14 @@
 
 
 
-typedef int dtype; 
+typedef int dtype;
 
-struct Coordinate{
-  size_t r;
-  size_t c;
+static int UNASSIGNED = -1;
+
+struct Coordinate
+{
+    size_t r;
+    size_t c;
 };
 typedef struct Coordinate Coordinate;
 
@@ -29,10 +32,10 @@ private:
     //List of Possibilities
 
 public:
-    Square(): num(-1) {}
+    Square(): num(UNASSIGNED) {}
     Square(dtype val): num(val) {}
 
-    bool is_solved() { return (num <= 0) ? false : true; };
+    bool is_solved() { return (num == UNASSIGNED) ? false : true; };
     dtype& value() {
         return num;
     }
@@ -139,6 +142,18 @@ public:
     }
     GridRow& operator[](size_t idx) {return grid[idx];}
     
+    //Below function refers to geeks for geek
+    bool find_next_empty_cell(int &row, int &col){
+        for (row = 0; row < grid.size();row++){
+            for (col = 0; col < grid.size();col++){
+                if (!grid[row][col].is_solved()){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     void display_values() {
         std::cout << "Displaying Sudoku Grid" << std::endl;
         std::cout << "Grid Size: " << grid_size << std::endl;
@@ -153,6 +168,8 @@ public:
             std::cout << std::endl;
         }
     }
+
+
     
     //Debug purpose
     std::string display_values_inline() {

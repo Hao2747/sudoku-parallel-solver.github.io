@@ -4,3 +4,5 @@
 *.exe
 
 solver-release
+test.cpp
+test

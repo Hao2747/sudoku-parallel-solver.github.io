@@ -2,40 +2,87 @@
 
 #include "grid.h"
 #include "solver.h"
-
-class BackSolve : public Solver {
+#include <tuple>
+class BackSolve : public Solver
+{
 private:
-  static Grid recur_helper(Grid g, std::vector<Coordinate> coords) {
-    if(coords.empty()) {
-     if(g.validate()) {
-            return g;
-        } else {
-            return Grid();
-        }
-    }
-    
-    Coordinate c = coords.back();
-    coords.pop_back();
+  bool recur_helper(Grid &g)
+  {
+    // g.display_values();
+    int row, col;
 
-    for(dtype guess = 1; guess <= g.size(); guess++) {
-        g[c.r][c.c] = guess;
-        Grid ret = recur_helper(g, coords);
-        
-        if(!ret.empty()) {
-            return ret;
-        }
+    // If cannot find more empty cell, puzzle is solved
+    // If can find, set row and col of first empty cell
+    if (!g.find_next_empty_cell(row, col))
+    {
+      return true;
     }
-    return Grid();
+
+    Grid private_g = g;
+    for (dtype guess = 1; guess <= g.size(); guess++)
+    {
+      private_g[row][col] = guess;
+      if (private_g.is_possible())
+      {
+        if (recur_helper(private_g))
+        {
+          g = private_g;
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
+  bool recur_helper_par(Grid &g)
+  {
+
+    int row, col;
+
+    // If cannot find more empty cell, puzzle is solved
+    // If can find, set row and col of first empty cell
+    if (!g.find_next_empty_cell(row, col))
+    {
+      return true;
+    }
+    bool found_solution = false;
+
+#pragma omp parallel shared(found_solution)
+    {
+      Grid private_g = g;
+      #pragma omp cancellation point parallel
+      for (dtype guess = 1; guess <= g.size(); guess++)
+      {
+        private_g[row][col] = guess;
+        if (private_g.is_possible())
+        {
+          if (recur_helper(private_g))
+          {
+            g = private_g;
+            found_solution = true;
+            #pragma omp cancel parallel
+          }
+        }
+      }
+    }
+    return found_solution;
+
+  }
+
 public:
-  Grid seq_solve(Grid g) override{
-    std::vector<Coordinate> coords = g.find_all_empty_cells();
-    std::cout << "Solving with Backsolve" << std::endl;
-    return recur_helper(g, coords);
+  BackSolve(){
+    std::cout << "DFS solver is selected" << std::endl;
   }
-  Grid par_solve(Grid g) override{
-    
-    //implement this later after BFS for checkpoint
-    return Grid();
+  Grid seq_solve(Grid g) override
+  {
+    // std::vector<Coordinate> coords = g.find_all_empty_cells();
+    recur_helper(g);
+    return g;
+  }
+
+  Grid par_solve(Grid g) override
+  {
+    recur_helper(g);
+    return g;
   }
 };
