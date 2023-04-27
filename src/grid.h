@@ -17,7 +17,7 @@
 typedef int dtype;
 
 static int UNASSIGNED = 0;
-static size_t const BIT_CNT = 10;
+static size_t const BIT_CNT = 9;
 
 struct Coordinate
 {
@@ -174,9 +174,6 @@ public:
             grid.emplace_back(GridRow(vec));
         }
         // std::unique_ptr<int[]> row(new int[grid_size]);
-        row = new std::bitset<BIT_CNT>[9];
-        col = new std::bitset<BIT_CNT>[9];
-        box = new std::bitset<BIT_CNT>[9];
     }
     ~Grid()
     {
@@ -483,11 +480,38 @@ public:
         {
             for (int row_index = 0; row_index < grid_size; row_index++)
             {
-                col[col_index] |= 1 << (grid[row_index][col_index].value() -1);
+                col[col_index] |= 1 << (grid[row_index][col_index].value() - 1);
             }
         }
     }
 
+    void get_box_array()
+    {
+        for (int box_index = 0; box_index < grid_size; box_index++)
+        {
+            int row_start = box_index / block_len * block_len;
+            int col_start = box_index % block_len * block_len;
+            for (int row_index = 0; row_index < block_len; row_index++)
+            {
+                for (int col_index = 0; col_index < block_len; col_index++)
+                {
+                    box[box_index] |= 1 << (grid[row_start + row_index][col_start + col_index].value() - 1);
+                    std::cout << box_index << row_start + row_index << col_start + col_index << std::endl;
+                }
+            }
+        }
+    }
+
+    void init_row_col_box()
+    {
+        row = new std::bitset<BIT_CNT>[9];
+        col = new std::bitset<BIT_CNT>[9];
+        box = new std::bitset<BIT_CNT>[9];
+
+        get_row_array();
+        get_col_array();
+        get_box_array();
+    }
     void print_arrays()
     {
         display_values();
@@ -502,6 +526,13 @@ public:
         for (int i = 0; i < grid_size; i++)
         {
             std::cout << col[i] << std::endl;
+        }
+
+        std::cout << "box: " << std::endl;
+
+        for (int i = 0; i < grid_size; i++)
+        {
+            std::cout << box[i] << std::endl;
         }
     }
 };
