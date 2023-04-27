@@ -20,6 +20,8 @@ public:
         // size_t grid_size = g.size();
         // int row[grid_size];
         g.get_row_array();
+        g.get_col_array();
+        g.print_arrays();
         return g;
     }
 
