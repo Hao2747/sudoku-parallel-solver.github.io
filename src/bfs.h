@@ -5,6 +5,8 @@
 #include "grid.h"
 #include "solver.h"
 
+#ifndef BFS_H
+#define BFS_H
 class BFS : public Solver
 {
 public:
@@ -121,3 +123,6 @@ public:
         return Grid();
     }
 };
+
+
+#endif

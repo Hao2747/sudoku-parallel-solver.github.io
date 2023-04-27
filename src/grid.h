@@ -8,6 +8,7 @@
 #include <cassert>
 #include <omp.h>
 #include <set>
+#include <memory>
 
 
 #ifndef GRID_H
@@ -17,7 +18,7 @@
 
 typedef int dtype;
 
-static int UNASSIGNED = -1;
+static int UNASSIGNED = 0;
 
 struct Coordinate
 {
@@ -85,7 +86,8 @@ private:
     size_t block_len; // sqrt(row)
 
     std::vector<GridRow> grid;
-    
+    int *row;
+
     //checks is the vectors are possible in sudoku
     //returns : bool - true or false if possible 
     //   size_t - number of digits missing in row (only valid when bool is true)
@@ -146,7 +148,11 @@ public:
             assert(s == vec.size());
             grid.emplace_back(GridRow(vec));
         }
-        
+        // std::unique_ptr<int[]> row(new int[grid_size]);
+        row = new int[9];
+    }
+    ~Grid(){
+        // delete[] row;
     }
     GridRow& operator[](size_t idx) {return grid[idx];}
     
@@ -377,6 +383,22 @@ public:
             return true;
         }
         return false;
+    }
+
+
+
+    // Build row array
+    void get_row_array(){
+        display_values();
+        for (int i = 0; i < grid_size; i++)
+        {
+            for (int j = 0; j < grid_size; j++){
+                row[i] |= 1 << grid[i][j].value();
+            }
+        }
+        for (int i = 0; i < grid_size; i++){
+            std::cout << row[i] << std::endl;
+        }
     }
     
 

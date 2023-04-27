@@ -3,8 +3,9 @@
 #include <vector>
 #include <tuple>
 
-#include "backsolve.cpp"
-#include "bfs.cpp"
+// #include "backsolve.h"
+// #include "bfs.h"
+// #include "cp.h"
 #include "util.h"
 #include "timing.h"
 

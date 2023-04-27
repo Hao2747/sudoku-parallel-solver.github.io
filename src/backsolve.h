@@ -3,6 +3,9 @@
 #include "grid.h"
 #include "solver.h"
 #include <tuple>
+
+#ifndef BACKSOLVE_H
+#define BACKSOLVE_H
 class BackSolve : public Solver
 {
 private:
@@ -86,3 +89,5 @@ public:
     return g;
   }
 };
+
+#endif
