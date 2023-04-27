@@ -17,7 +17,7 @@
 
 typedef int dtype;
 
-static int UNASSIGNED = -1;
+static int UNASSIGNED = 0;
 
 struct Coordinate
 {
@@ -35,7 +35,7 @@ public:
     Square(): num(UNASSIGNED) {}
     Square(dtype val): num(val) {}
 
-    bool is_solved() { return (num == UNASSIGNED) ? false : true; };
+    bool is_solved() { return (num <= UNASSIGNED) ? false : true; };
     dtype& value() {
         return num;
     }

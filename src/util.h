@@ -76,6 +76,42 @@ StartupOptions parseOptions(int argc, const char **argv)
     return rs;
 }
 
+Grid large_sudoku_to_grid(std::string file) {
+
+  std::vector<dtype> numbers;
+
+	std::ifstream in(file, std::ios::in);
+
+	size_t row_size, number, expected_num;
+  size_t count = 0;
+	
+	in >> row_size;
+
+	Grid result(row_size); 
+ 	
+	expected_num = row_size*row_size;
+	
+	//read until EOF
+  while (in >> number) {
+    if(count < expected_num) {
+      size_t r = count/ row_size;
+      size_t c = count % row_size;
+      result[r][c] = number;
+    }
+    count++;
+	}
+
+	//Close the file stream
+	in.close();
+
+  if((count != expected_num) || (count == 0)) {
+      std::cerr <<"ERROR IN INPUT:" << file << std::endl;
+  }
+  
+  result.display_values();
+  return result;
+}
+
 void file_to_grids(std::string filename, std::vector<Grid> &grids, int grid_cnt = -1)
 {
     std::ifstream inputFile(filename); // open file for input
@@ -127,4 +163,13 @@ void file_to_grids(std::string filename, std::vector<Grid> &grids, int grid_cnt 
     {
         std::cerr << "Unable to open file" << std::endl;
     }
+}
+
+void handle_files(std::string make_rel_path, std::vector<Grid> &grids, int grid_cnt = -1) {
+  if(make_rel_path.find("/large_grids/") != std::string::npos) {
+  //if(make_rel_path.contains("/large_grids/")) {
+    grids.emplace_back(large_sudoku_to_grid(make_rel_path));
+  } else {
+    file_to_grids(make_rel_path, grids, grid_cnt);
+  }
 }
