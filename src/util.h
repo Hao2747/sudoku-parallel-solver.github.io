@@ -1,7 +1,7 @@
 #include <fstream>
 #include <string.h>
 #include "solver.h"
-#include "cp.h"
+#include "cp_backsolve.h"
 #include "bfs.h"
 #include "backsolve.h"
 
@@ -40,7 +40,7 @@ StartupOptions parseOptions(int argc, const char **argv)
                 }
                 else if (strcmp(argv[i + 1], "CP") == 0)
                 {
-                    rs.solver = new CP();
+                    rs.solver = new CP_Backsolve();
                 }
                 // Startup options. Is not included in startup option to avoid
                 // instantiating a not used object
@@ -78,7 +78,7 @@ StartupOptions parseOptions(int argc, const char **argv)
     }
     if (!rs.solver)
     {
-        rs.solver = new CP();
+        rs.solver = new CP_Backsolve();
     }
     return rs;
 }

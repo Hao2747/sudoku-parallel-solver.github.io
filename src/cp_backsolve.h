@@ -2,11 +2,11 @@
 
 #include "grid.h"
 #include "solver.h"
-#include <tuple>
 
-#ifndef BACKSOLVE_H
-#define BACKSOLVE_H
-class BackSolve : public Solver
+#ifndef CP_H
+#define CP_H
+// Constrain propagation
+class CP_Backsolve : public Solver
 {
 private:
   bool recur_helper(Grid &g)
@@ -21,8 +21,25 @@ private:
       return true;
     }
 
+    std::vector<int> available_choices; // Initialize an empty vector to store indices of 1 bits
+    std::bitset<BIT_CNT> square_choices = g[row][col].get_choices();
+    // Traverse all bits where the bit is set to 1
+    for (int i = 0; i < square_choices.size(); i++)
+    {
+      if (square_choices.test(i))
+      {
+        available_choices.push_back(i+1); // Add the index to the vector
+      }
+    }
+    // std::cout << "coordinate " << row << ", " << col <<" :";
+    // for (int i = 0; i < available_choices.size(); i++)
+    // {
+    //   std::cout << available_choices[i];
+    // }
+    // std::cout << std::endl;
+
     Grid private_g = g;
-    for (dtype guess = 1; guess <= g.size(); guess++)
+    for (dtype guess :available_choices)
     {
       private_g[row][col] = guess;
       if (private_g.is_possible())
@@ -69,16 +86,19 @@ private:
       }
     }
     return found_solution;
-
   }
 
 public:
-  BackSolve(){
-    std::cout << "DFS solver is selected" << std::endl;
+  CP_Backsolve()
+  {
+    std::cout << "CP_DFS solver is selected" << std::endl;
   }
   Grid seq_solve(Grid g) override
   {
     // std::vector<Coordinate> coords = g.find_all_empty_cells();
+    g.set_square_choices();
+    g.print_arrays();
+
     recur_helper(g);
     return g;
   }

@@ -494,21 +494,6 @@ public:
             int box_index = get_box_index(cell.r, cell.c);
             std::bitset<BIT_CNT> available_choice = ~(row[cell.r] | col[cell.c] | box[box_index]);
             grid[cell.r][cell.c].set_choices(available_choice);
-            if (cell.r == 3 && cell.c == 1)
-            {
-                std::cout << "row: " << std::endl;
-
-                    std::cout << row[cell.r] << std::endl;
-                
-                std::cout << "col: " << std::endl;
-
-                
-                    std::cout << col[cell.c] << std::endl;
-std::cout << "box: " << box_index<< std::endl;
-
-                
-                    std::cout << box[box_index] << std::endl;                
-            }
         }
     }
     void get_row_array()
@@ -544,7 +529,6 @@ std::cout << "box: " << box_index<< std::endl;
                 for (int col_index = 0; col_index < block_len; col_index++)
                 {
                     box[box_index] |= 1 << (grid[row_start + row_index][col_start + col_index].value() - 1);
-                    std::cout << box_index << row_start + row_index << col_start + col_index << std::endl;
                 }
             }
         }
