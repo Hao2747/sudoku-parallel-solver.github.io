@@ -30,7 +30,7 @@ class Square
 {
 private:
     dtype num;
-    std::vector<dtype> choices_;
+    std::bitset<BIT_CNT> choices;
 
 public:
     Square() : num(UNASSIGNED) {}
@@ -48,14 +48,14 @@ public:
         this->num = num;
     }
 
-    void set_choices(const std::vector<dtype> &c)
+    void set_choices(std::bitset<BIT_CNT> &c)
     {
-        choices_ = c;
+        choices = c;
     }
 
-    std::vector<dtype> choices()
+    std::bitset<BIT_CNT> get_choices()
     {
-        return choices_;
+        return choices;
     }
 };
 
@@ -95,9 +95,9 @@ private:
     size_t block_len; // sqrt(row)
 
     std::vector<GridRow> grid;
-    std::bitset<BIT_CNT> *row;
-    std::bitset<BIT_CNT> *col;
-    std::bitset<BIT_CNT> *box;
+    std::vector<std::bitset<BIT_CNT>> row;
+    std::vector<std::bitset<BIT_CNT>> col;
+    std::vector<std::bitset<BIT_CNT>> box;
 
     // checks is the vectors are possible in sudoku
     // returns : bool - true or false if possible
@@ -276,6 +276,7 @@ public:
         return res;
     }
 
+/*
     void annotate_coords(std::vector<Coordinate> coords)
     {
         std::set<dtype, std::greater<dtype>> copy;
@@ -324,7 +325,7 @@ public:
             grid[row][col].set_choices(std::vector<dtype>(unseen.begin(), unseen.end()));
         }
     }
-
+*/
     bool validate()
     {
         assert(block_len * block_len == grid_size);
@@ -463,6 +464,20 @@ public:
     }
 
     // Build row array
+
+    // int get_box_index(){
+
+    // }
+
+    // void get_choices(){
+    //     init_row_col_box();
+
+    //     for (int row_index = 0; row_index < grid_size;row_index++){
+    //         for (int col_index = 0; col_index < grid_size; col_index++){
+
+    //         }
+    //     }
+    // }
     void get_row_array()
     {
         for (int row_index = 0; row_index < grid_size; row_index++)
@@ -504,10 +519,10 @@ public:
 
     void init_row_col_box()
     {
-        row = new std::bitset<BIT_CNT>[9];
-        col = new std::bitset<BIT_CNT>[9];
-        box = new std::bitset<BIT_CNT>[9];
-
+        row.resize(grid_size);
+        col.resize(grid_size);
+        box.resize(grid_size);
+        
         get_row_array();
         get_col_array();
         get_box_array();
