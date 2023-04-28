@@ -173,12 +173,8 @@ public:
             assert(s == vec.size());
             grid.emplace_back(GridRow(vec));
         }
-        // std::unique_ptr<int[]> row(new int[grid_size]);
     }
-    ~Grid()
-    {
-        // delete[] row;
-    }
+
     GridRow &operator[](size_t idx) { return grid[idx]; }
 
     // Below function refers to geeks for geek
@@ -251,6 +247,24 @@ public:
         return res;
     }
 
+    /*
+    std::vector<Coordinate> find_all_empty_cells()
+    {
+        std::vector<Coordinate> res;
+        for (size_t col = 0; col < grid_size; col++)
+        {
+            for (size_t row = 0; row < grid_size; row++)
+            {
+                if (!grid[row][col].is_solved())
+                {
+                    res.emplace_back((Coordinate){.r = row, .c = col});
+                }
+            }
+        }
+
+        return res;
+    }
+    */
     std::vector<Coordinate> find_all_empty_cells_parallel()
     {
         std::vector<Coordinate> res;
@@ -276,56 +290,56 @@ public:
         return res;
     }
 
-/*
-    void annotate_coords(std::vector<Coordinate> coords)
-    {
-        std::set<dtype, std::greater<dtype>> copy;
-
-        for (dtype i = 1; i <= grid_size; i++)
+    /*
+        void annotate_coords(std::vector<Coordinate> coords)
         {
-            copy.insert(i);
-        }
+            std::set<dtype, std::greater<dtype>> copy;
 
-        for (Coordinate coord : coords)
-        {
-            std::set<dtype, std::greater<dtype>> unseen = copy;
-
-            size_t row = coord.r;
-            size_t col = coord.c;
-
-            for (size_t c = 0; c < grid_size; c++)
+            for (dtype i = 1; i <= grid_size; i++)
             {
-                if (grid[row][c].is_solved())
-                {
-                    unseen.erase(grid[row][c].value());
-                }
+                copy.insert(i);
             }
 
-            for (size_t r = 0; r < grid_size; r++)
+            for (Coordinate coord : coords)
             {
-                if (grid[r][col].is_solved())
-                {
-                    unseen.erase(grid[r][col].value());
-                }
-            }
+                std::set<dtype, std::greater<dtype>> unseen = copy;
 
-            size_t block_row_start = row - row % block_len;
-            size_t block_col_start = col - col % block_len;
-            for (size_t r = block_row_start; r < (block_row_start + block_len); r++)
-            {
-                for (size_t c = block_col_start; c < (block_row_start + block_len); c++)
+                size_t row = coord.r;
+                size_t col = coord.c;
+
+                for (size_t c = 0; c < grid_size; c++)
                 {
-                    if (grid[r][c].is_solved())
+                    if (grid[row][c].is_solved())
                     {
-                        unseen.erase(grid[r][c].value());
+                        unseen.erase(grid[row][c].value());
                     }
                 }
-            }
 
-            grid[row][col].set_choices(std::vector<dtype>(unseen.begin(), unseen.end()));
+                for (size_t r = 0; r < grid_size; r++)
+                {
+                    if (grid[r][col].is_solved())
+                    {
+                        unseen.erase(grid[r][col].value());
+                    }
+                }
+
+                size_t block_row_start = row - row % block_len;
+                size_t block_col_start = col - col % block_len;
+                for (size_t r = block_row_start; r < (block_row_start + block_len); r++)
+                {
+                    for (size_t c = block_col_start; c < (block_row_start + block_len); c++)
+                    {
+                        if (grid[r][c].is_solved())
+                        {
+                            unseen.erase(grid[r][c].value());
+                        }
+                    }
+                }
+
+                grid[row][col].set_choices(std::vector<dtype>(unseen.begin(), unseen.end()));
+            }
         }
-    }
-*/
+    */
     bool validate()
     {
         assert(block_len * block_len == grid_size);
@@ -465,19 +479,38 @@ public:
 
     // Build row array
 
-    // int get_box_index(){
+    int get_box_index(size_t row, size_t col)
+    {
+        return row / 3 * 3 + col / 3;
+    }
 
-    // }
+    void set_square_choices()
+    {
+        init_row_col_box();
+        std::vector<Coordinate> empty_cells = find_all_empty_cells();
 
-    // void get_choices(){
-    //     init_row_col_box();
+        for (Coordinate cell : empty_cells)
+        {
+            int box_index = get_box_index(cell.r, cell.c);
+            std::bitset<BIT_CNT> available_choice = ~(row[cell.r] | col[cell.c] | box[box_index]);
+            grid[cell.r][cell.c].set_choices(available_choice);
+            if (cell.r == 3 && cell.c == 1)
+            {
+                std::cout << "row: " << std::endl;
 
-    //     for (int row_index = 0; row_index < grid_size;row_index++){
-    //         for (int col_index = 0; col_index < grid_size; col_index++){
+                    std::cout << row[cell.r] << std::endl;
+                
+                std::cout << "col: " << std::endl;
 
-    //         }
-    //     }
-    // }
+                
+                    std::cout << col[cell.c] << std::endl;
+std::cout << "box: " << box_index<< std::endl;
+
+                
+                    std::cout << box[box_index] << std::endl;                
+            }
+        }
+    }
     void get_row_array()
     {
         for (int row_index = 0; row_index < grid_size; row_index++)
@@ -522,7 +555,7 @@ public:
         row.resize(grid_size);
         col.resize(grid_size);
         box.resize(grid_size);
-        
+
         get_row_array();
         get_col_array();
         get_box_array();
@@ -530,6 +563,18 @@ public:
     void print_arrays()
     {
         display_values();
+
+        std::cout << "choices: " << std::endl;
+
+        for (int row_index = 0; row_index < grid_size; row_index++)
+        {
+            for (int col_index = 0; col_index < grid_size; col_index++)
+            {
+                std::cout << grid[row_index][col_index].get_choices() << " ";
+            }
+            std::cout << std::endl;
+        }
+
         std::cout << "row: " << std::endl;
 
         for (int i = 0; i < grid_size; i++)

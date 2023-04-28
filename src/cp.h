@@ -19,7 +19,7 @@ public:
         // std::vector<Coordinate> coords = g.find_all_empty_cells();
         // size_t grid_size = g.size();
         // int row[grid_size];
-        g.init_row_col_box();
+        g.set_square_choices();
         g.print_arrays();
         return g;
     }
