@@ -57,6 +57,21 @@ public:
     {
         return choices;
     }
+
+    std::vector<int> get_available_choices()
+    {
+        std::vector<int> available_choices; // Initialize an empty vector to store indices of 1 bits
+
+        // Traverse all bits where the bit is set to 1
+        for (int i = 0; i < choices.size(); i++)
+        {
+            if (choices.test(i))
+            {
+                available_choices.push_back(i + 1); // Add the index to the vector
+            }
+        }
+        return available_choices;
+    }
 };
 
 class Grid

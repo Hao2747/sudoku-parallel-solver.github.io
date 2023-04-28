@@ -21,16 +21,8 @@ private:
       return true;
     }
 
-    std::vector<int> available_choices; // Initialize an empty vector to store indices of 1 bits
-    std::bitset<BIT_CNT> square_choices = g[row][col].get_choices();
-    // Traverse all bits where the bit is set to 1
-    for (int i = 0; i < square_choices.size(); i++)
-    {
-      if (square_choices.test(i))
-      {
-        available_choices.push_back(i + 1); // Add the index to the vector
-      }
-    }
+    std::vector<int> available_choices = g[row][col].get_available_choices(); // Initialize an empty vector to store indices of 1 bits
+    
 
     Grid private_g = g;
     for (dtype guess : available_choices)
