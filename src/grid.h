@@ -17,13 +17,17 @@
 typedef int dtype;
 
 static int UNASSIGNED = 0;
-static size_t const BIT_CNT = 4;
+static size_t const BIT_CNT = 9;
 
 struct Coordinate
 {
     size_t r;
     size_t c;
+
+    
 };
+
+
 typedef struct Coordinate Coordinate;
 
 class Square
@@ -252,9 +256,13 @@ public:
     std::vector<Coordinate> find_all_empty_cells()
     {
         std::vector<Coordinate> res;
-        for (size_t col = 0; col < grid_size; col++)
+        // for (size_t col = 0; col < grid_size; col++)
+        // {
+        //     for (size_t row = 0; row < grid_size; row++)
+        //     {
+                for (size_t row = 0; row < grid_size; row++)
         {
-            for (size_t row = 0; row < grid_size; row++)
+            for (size_t col= 0; col < grid_size; col++)
             {
                 if (!grid[row][col].is_solved())
                 {
@@ -500,20 +508,24 @@ public:
 
     int get_box_index(size_t row, size_t col)
     {
-        return row / 3 * 3 + col / 3;
+        return row / block_len * block_len + col / block_len;
     }
 
     void set_square_choices(std::vector<Coordinate> empty_cells)
     {
         init_row_col_box();
-        
 
         for (Coordinate cell : empty_cells)
         {
             int box_index = get_box_index(cell.r, cell.c);
             std::bitset<BIT_CNT> available_choice = ~(row[cell.r] | col[cell.c] | box[box_index]);
             grid[cell.r][cell.c].set_choices(available_choice);
+            if (cell.r == 8 && cell.c == 7){
+            std::cout << "set " << cell.r << ", " << cell.c << " to:" << grid[cell.r][cell.c].get_choices();
+            }
         }
+        print_arrays();
+
     }
     void get_row_array()
     {

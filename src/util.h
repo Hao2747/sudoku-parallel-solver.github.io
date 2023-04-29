@@ -84,7 +84,7 @@ StartupOptions parseOptions(int argc, const char **argv)
     }
     if (!rs.solver)
     {
-        rs.solver = new CP_Backsolve();
+        rs.solver = new CP_No_Barrier();
     }
     return rs;
 }
