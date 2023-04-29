@@ -17,7 +17,7 @@
 typedef int dtype;
 
 static int UNASSIGNED = 0;
-static size_t const BIT_CNT = 9;
+static size_t const BIT_CNT = 4;
 
 struct Coordinate
 {
@@ -56,6 +56,10 @@ public:
     std::bitset<BIT_CNT> get_choices()
     {
         return choices;
+    }
+
+    int get_choices_cnt(){
+        return choices.count();
     }
 
     std::vector<int> get_available_choices()
@@ -499,10 +503,10 @@ public:
         return row / 3 * 3 + col / 3;
     }
 
-    void set_square_choices()
+    void set_square_choices(std::vector<Coordinate> empty_cells)
     {
         init_row_col_box();
-        std::vector<Coordinate> empty_cells = find_all_empty_cells();
+        
 
         for (Coordinate cell : empty_cells)
         {

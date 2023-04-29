@@ -4,6 +4,7 @@
 #include "cp_backsolve.h"
 #include "bfs.h"
 #include "backsolve.h"
+#include "cp_no_barrier.h"
 
 struct StartupOptions
 {
@@ -38,10 +39,15 @@ StartupOptions parseOptions(int argc, const char **argv)
                 {
                     rs.solver = new BackSolve();
                 }
-                else if (strcmp(argv[i + 1], "CP") == 0)
+                else if (strcmp(argv[i + 1], "CP_Backsolve") == 0)
                 {
                     rs.solver = new CP_Backsolve();
                 }
+                else if (strcmp(argv[i + 1], "CP_No_Barrier") == 0)
+                {
+                    rs.solver = new CP_No_Barrier();
+                }
+                
                 // Startup options. Is not included in startup option to avoid
                 // instantiating a not used object
             }

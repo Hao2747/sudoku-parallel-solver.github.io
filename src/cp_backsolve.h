@@ -3,8 +3,8 @@
 #include "grid.h"
 #include "solver.h"
 
-#ifndef CP_H
-#define CP_H
+#ifndef CP_BACKSOLVE_H
+#define CP_BACKSOLVE_H
 // Constrain propagation
 class CP_Backsolve : public Solver
 {
@@ -92,15 +92,16 @@ public:
   }
   Grid seq_solve(Grid g) override
   {
-    // std::vector<Coordinate> coords = g.find_all_empty_cells();
-    g.set_square_choices();
+    std::vector<Coordinate> coords = g.find_all_empty_cells();
+    g.set_square_choices(coords);
     recur_helper(g);
     return g;
   }
 
   Grid par_solve(Grid g) override
   {
-    g.set_square_choices();
+    std::vector<Coordinate> coords = g.find_all_empty_cells();
+    g.set_square_choices(coords);
     recur_helper(g);
     return g;
   }
