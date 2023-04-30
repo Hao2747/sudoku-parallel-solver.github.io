@@ -37,6 +37,7 @@ public:
                 break;
             }
             // std::cout << row << col << std::endl;
+            // make guesses, if it is possible, added to the queue
             for (guess = 1; guess <= grid_size; guess++)
             {
                 private_g[row][col] = guess;
@@ -53,8 +54,8 @@ public:
 
             // for (auto &grid : grid_queue)
             // {
-                // grid.display_values();
-                // Do something with the current element (stored in elem)
+            // grid.display_values();
+            // Do something with the current element (stored in elem)
             // }
             // exit(1);
 
@@ -65,62 +66,78 @@ public:
 
     Grid par_solve(Grid g) override
     {
-        std::vector<Coordinate> coords = g.find_all_empty_cells();
+        Grid private_g;
+        std::deque<Grid> grid_queue;
+        int row, col;
+        dtype guess;
+        std::deque<Grid> possible_grids;
+        int grid_size = g.size();
+        bool get_grid;
 
-        std::deque<Grid> possible;
-
-        possible.push_back(g);
-        dtype grid_size = g.size();
-
-        // we will do the bfs solving by choosing one of the unsolved squres
-        // then we will find all possibilies for that square
-        // at any particular timestep, the coords is all the same
-        // pick and solve exactly one square in every full iteration of the while loop
-        std::deque<Grid> next_iter;
-
-        while (!coords.empty())
+        grid_queue.push_back(g);
+// g.display_values();
+#pragma omp parallel shared(g, grid_size) private(private_g, row, col, possible_grids, get_grid)
         {
-            Coordinate c = coords.back();
-            coords.pop_back();
-            next_iter.clear();
-
-            int possible_size = possible.size();
-            next_iter.resize(possible_size * 9);
-#pragma omp parallel for
-            for (int i = 0; i < possible_size; i++)
-
+            while (true)
             {
-                int tid = omp_get_thread_num();
-                Grid private_possible;
-                private_possible = possible[i];
-
-                for (dtype guess = 1; guess <= grid_size; guess++)
+                get_grid = false;
+#pragma omp critical
                 {
-                    // overriding value here (should be ok)
-                    private_possible[c.r][c.c] = guess;
-
-                    // this function is not efficient and should be replaced
-                    // Instead this function will be replaced by taking the current loc
-                    // the row/col/and box of the location of the guess and check if its possible
-                    if (private_possible.is_possible())
+                    if (!grid_queue.empty())
                     {
-                        next_iter[tid * 9 + (guess - 1)] = private_possible;
+                        private_g = grid_queue.front();
+                        grid_queue.pop_front();
+                        get_grid = true;
                     }
                 }
+
+                if (!get_grid)
+                {
+                    continue;
+                }
+                // if there is still empty cell, set row and col
+                if (!private_g.find_next_empty_cell(row, col))
+                {
+// #pragma omp critical
+//                     {
+                        if (grid_queue.empty())
+                        {
+                            g = private_g;
+                            //TODO: omp cancel
+                            continue;
+                        }
+                    // }
+                }
+                // std::cout << row << col << std::endl;
+                // make guesses, if it is possible, added to the queue
+                for (guess = 1; guess <= grid_size; guess++)
+                {
+                    private_g[row][col] = guess;
+                    // private_g.display_values();
+                    if (private_g.is_possible())
+                    {
+                        possible_grids.emplace_back(private_g);
+                    }
+                }
+                if (!possible_grids.empty())
+                {
+#pragma omp critical
+                    {
+                        grid_queue.insert(grid_queue.end(), possible_grids.begin(), possible_grids.end());
+                    }
+                }
+
+                // for (auto &grid : grid_queue)
+                // {
+                // grid.display_values();
+                // Do something with the current element (stored in elem)
+                // }
+                // exit(1);
+
+                possible_grids.clear();
             }
-
-            next_iter.erase(std::remove_if(next_iter.begin(), next_iter.end(), [](Grid i)
-                                           { return i.empty(); }),
-                            next_iter.end());
-            possible.swap(next_iter);
         }
-
-        if (!possible.empty())
-        {
-            return possible[0];
-        }
-
-        return Grid();
+        return g;
     }
 };
 
