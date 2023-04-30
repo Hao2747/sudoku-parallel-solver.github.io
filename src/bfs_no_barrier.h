@@ -76,12 +76,12 @@ public:
 
         grid_queue.push_back(g);
 // g.display_values();
-#pragma omp parallel shared(g, grid_size) private(private_g, row, col, possible_grids, get_grid)
+#pragma omp parallel shared(g, grid_size,grid_queue) private(private_g, row, col, possible_grids, get_grid)
         {
             int tid = omp_get_thread_num();
             while (true)
             {
-      #pragma omp cancellation point parallel
+    //   #pragma omp cancellation point parallel
 
                 get_grid = false;
 #pragma omp critical
@@ -146,6 +146,7 @@ public:
                 possible_grids.clear();
             }
         }
+        std::cout << "out of parallel region" << std::endl;
         return g;
     }
 };

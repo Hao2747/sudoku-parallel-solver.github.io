@@ -17,7 +17,7 @@
 typedef int dtype;
 
 static int UNASSIGNED = 0;
-static size_t const BIT_CNT = 4;
+static size_t const BIT_CNT = 9;
 
 struct Coordinate
 {
