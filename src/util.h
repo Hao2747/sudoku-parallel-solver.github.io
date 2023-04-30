@@ -1,10 +1,14 @@
 #include <fstream>
 #include <string.h>
 #include "solver.h"
+#include "cp_backsolve.h"
+#include "bfs.h"
+#include "backsolve.h"
+#include "cp_no_barrier.h"
 
 struct StartupOptions
 {
-    std::string input_file = "simple-500";
+    std::string input_file = "4x4";
     Solver *solver = nullptr;
     // bool run_parallel = true;
     // At most n grids is being read from the input file. -1 means read all grids from file
@@ -35,6 +39,15 @@ StartupOptions parseOptions(int argc, const char **argv)
                 {
                     rs.solver = new BackSolve();
                 }
+                else if (strcmp(argv[i + 1], "CP_Backsolve") == 0)
+                {
+                    rs.solver = new CP_Backsolve();
+                }
+                else if (strcmp(argv[i + 1], "CP_No_Barrier") == 0)
+                {
+                    rs.solver = new CP_No_Barrier();
+                }
+                
                 // Startup options. Is not included in startup option to avoid
                 // instantiating a not used object
             }
@@ -66,12 +79,12 @@ StartupOptions parseOptions(int argc, const char **argv)
     // Startup option
     if (rs.modes.empty())
     {
-        rs.modes.emplace_back("par");
+        rs.modes.emplace_back("seq");
         std::cout << "Running in parallel" << std::endl;
     }
     if (!rs.solver)
     {
-        rs.solver = new BackSolve();
+        rs.solver = new CP_No_Barrier();
     }
     return rs;
 }
@@ -98,7 +111,7 @@ void file_to_grids(std::string filename, std::vector<Grid> &grids, int grid_cnt 
                     // std::cout << "line as " << line << std::endl;
                     // std::cout << "size as " << grid_size << std::endl;
                 }
-                std::vector<std::vector<int>> matrix(grid_size, std::vector<int>(grid_size, -1));
+                std::vector<std::vector<int>> matrix(grid_size, std::vector<int>(grid_size, UNASSIGNED));
 
                 int idx = 0;
                 for (int i = 0; i < grid_size; i++)
