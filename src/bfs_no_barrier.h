@@ -78,8 +78,11 @@ public:
 // g.display_values();
 #pragma omp parallel shared(g, grid_size) private(private_g, row, col, possible_grids, get_grid)
         {
+            int tid = omp_get_thread_num();
             while (true)
             {
+      #pragma omp cancellation point parallel
+
                 get_grid = false;
 #pragma omp critical
                 {
@@ -88,6 +91,9 @@ public:
                         private_g = grid_queue.front();
                         grid_queue.pop_front();
                         get_grid = true;
+                        std::cout << "tid " << tid << ": get" << std::endl;
+                        private_g.display_values();
+                        std::cout << "only " << grid_queue.size() << " puzzles left in the queue" << std::endl;
                     }
                 }
 
@@ -95,17 +101,20 @@ public:
                 {
                     continue;
                 }
+
                 // if there is still empty cell, set row and col
                 if (!private_g.find_next_empty_cell(row, col))
                 {
-// #pragma omp critical
-//                     {
-                        if (grid_queue.empty())
-                        {
-                            g = private_g;
-                            //TODO: omp cancel
-                            continue;
-                        }
+                    // #pragma omp critical
+                    //                     {
+                    if (grid_queue.empty())
+                    {
+                        g = private_g;
+                        // TODO: omp cancel
+            #pragma omp cancel parallel
+                        std::cout << "solution found!!!!" << std::endl;
+                        break;
+                    }
                     // }
                 }
                 // std::cout << row << col << std::endl;
