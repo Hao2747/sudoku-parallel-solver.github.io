@@ -91,7 +91,7 @@ int next_ticket = 0; // next ticket number to be issued
             
             while (!found_solution)
             {
-                std::cout << "tid " << tid << ": still running" << std::endl;
+                // std::cout << "tid " << tid << ": still running" << std::endl;
 
                 get_grid = false;
                 // #pragma omp cancellation point parallel
@@ -108,13 +108,13 @@ int next_ticket = 0; // next ticket number to be issued
                     }
                 }
                 omp_set_lock(&queue_lock);
-                std::cout << "tid " << tid << ": acquire the lock" << std::endl;
+                // std::cout << "tid " << tid << ": acquire the lock" << std::endl;
                 if (!grid_queue.empty())
                 {
                     private_g = grid_queue.front();
                     grid_queue.pop_front();
                     get_grid = true;
-                    std::cout << "tid " << tid << ": get from queue" << std::endl;
+                    // std::cout << "tid " << tid << ": get from queue" << std::endl;
                     // private_g.display_values();
                     // std::cout << "only " << grid_queue.size() << " puzzles left in the queue" << std::endl;
                 }
@@ -124,7 +124,7 @@ int next_ticket = 0; // next ticket number to be issued
                 #pragma omp flush(now_serving)
                 omp_unset_lock(&queue_lock);
 
-                std::cout << "tid " << tid << ": release the lock" << std::endl;
+                // std::cout << "tid " << tid << ": release the lock" << std::endl;
 
                 if (!get_grid)
                 {
@@ -143,7 +143,7 @@ int next_ticket = 0; // next ticket number to be issued
                             g = private_g;
                             // TODO: omp cancel
                             // #pragma omp cancel parallel
-                            std::cout << "solution found!!!!" << std::endl;
+                            // std::cout << "solution found!!!!" << std::endl;
                             found_solution = true;
                             #pragma omp flush(found_solution)
                         }
@@ -172,7 +172,7 @@ int next_ticket = 0; // next ticket number to be issued
                     }
                     omp_unset_lock(&queue_lock);
                 }
-                std::cout << "tid " << tid << ": now serving: " << now_serving << "grid in queue" << grid_queue.size() << std::endl;
+                // std::cout << "tid " << tid << ": now serving: " << now_serving << "grid in queue" << grid_queue.size() << std::endl;
 
                 // for (auto &grid : grid_queue)
                 // {
