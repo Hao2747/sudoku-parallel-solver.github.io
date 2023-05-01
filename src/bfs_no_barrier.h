@@ -76,6 +76,9 @@ public:
         bool found_solution = false;
         omp_set_num_threads(4);
         grid_queue.push_back(g);
+        omp_lock_t queue_lock;
+        omp_init_lock(&queue_lock);
+
 // g.display_values();
 #pragma omp parallel shared(g, grid_size, grid_queue, found_solution) private(private_g, row, col, possible_grids, get_grid)
         {
@@ -86,22 +89,18 @@ public:
 
                 get_grid = false;
                 // #pragma omp cancellation point parallel
+                omp_set_lock(&queue_lock);
 
                 if (!grid_queue.empty())
                 {
-#pragma omp critical(nowait) //add if empty here
-                    {
-                        if (!grid_queue.empty())
-                        {
-                            private_g = grid_queue.front();
-                            grid_queue.pop_front();
-                            get_grid = true;
-                            // std::cout << "tid " << tid << ": get from queue" << std::endl;
-                            // private_g.display_values();
-                            // std::cout << "only " << grid_queue.size() << " puzzles left in the queue" << std::endl;
-                        }
-                    }
+                    private_g = grid_queue.front();
+                    grid_queue.pop_front();
+                    get_grid = true;
+                    // std::cout << "tid " << tid << ": get from queue" << std::endl;
+                    // private_g.display_values();
+                    // std::cout << "only " << grid_queue.size() << " puzzles left in the queue" << std::endl;
                 }
+                omp_unset_lock(&queue_lock);
 
                 if (!get_grid)
                 {
@@ -120,7 +119,7 @@ public:
                             g = private_g;
                             // TODO: omp cancel
                             // #pragma omp cancel parallel
-                            // std::cout << "solution found!!!!"<< std::endl;
+                            // std::cout << "solution found!!!!" << std::endl;
                             found_solution = true;
                         }
                     }
@@ -141,10 +140,13 @@ public:
                 }
                 if (!possible_grids.empty())
                 {
-#pragma omp critical
+                omp_set_lock(&queue_lock);
+
                     {
                         grid_queue.insert(grid_queue.end(), possible_grids.begin(), possible_grids.end());
                     }
+                omp_unset_lock(&queue_lock);
+
                 }
 
                 // for (auto &grid : grid_queue)
@@ -157,6 +159,7 @@ public:
                 possible_grids.clear();
             }
         }
+        omp_destroy_lock(&queue_lock);
         return g;
     }
 };
