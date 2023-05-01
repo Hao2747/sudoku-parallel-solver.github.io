@@ -73,27 +73,29 @@ public:
         std::deque<Grid> possible_grids;
         int grid_size = g.size();
         bool get_grid;
-
+        omp_set_num_threads(4);
         grid_queue.push_back(g);
 // g.display_values();
-#pragma omp parallel shared(g, grid_size,grid_queue) private(private_g, row, col, possible_grids, get_grid)
+#pragma omp parallel shared(g, grid_size, grid_queue) private(private_g, row, col, possible_grids, get_grid)
         {
             int tid = omp_get_thread_num();
             while (true)
             {
-    //   #pragma omp cancellation point parallel
+                // std::cout << "tid " << tid << ": still running" << std::endl;
 
                 get_grid = false;
-#pragma omp critical
+#pragma omp cancellation point parallel
+
+                if (!grid_queue.empty())
                 {
-                    if (!grid_queue.empty())
+#pragma omp critical(nowait)
                     {
                         private_g = grid_queue.front();
                         grid_queue.pop_front();
                         get_grid = true;
-                        std::cout << "tid " << tid << ": get" << std::endl;
-                        private_g.display_values();
-                        std::cout << "only " << grid_queue.size() << " puzzles left in the queue" << std::endl;
+                        std::cout << "tid " << tid << ": get from queue" << std::endl;
+                        // private_g.display_values();
+                        // std::cout << "only " << grid_queue.size() << " puzzles left in the queue" << std::endl;
                     }
                 }
 
@@ -107,14 +109,15 @@ public:
                 {
                     // #pragma omp critical
                     //                     {
-                    if (grid_queue.empty())
-                    {
-                        g = private_g;
-                        // TODO: omp cancel
-            #pragma omp cancel parallel
-                        std::cout << "solution found!!!!" << std::endl;
-                        break;
-                    }
+                    // if (grid_queue.empty())
+                    // {
+                    // g = private_g;
+                    // TODO: omp cancel
+#pragma omp cancel parallel
+                    std::cout << "solution found!!!!\n\n\n\n\n\n\n\n\n\n\n"
+                              << std::endl;
+                    break;
+                    // }
                     // }
                 }
                 // std::cout << row << col << std::endl;
