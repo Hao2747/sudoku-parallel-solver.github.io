@@ -86,25 +86,26 @@ int next_ticket = 0; // next ticket number to be issued
             int tid = omp_get_thread_num();
             int nid = omp_get_num_threads();
             
-            int my_ticket;
-#pragma omp critical
-            {
-                my_ticket = next_ticket;
-                next_ticket++;
-            }
+
+
+            
             while (!found_solution)
             {
-                // std::cout << "tid " << tid << ": still running" << std::endl;
+                std::cout << "tid " << tid << ": still running" << std::endl;
 
                 get_grid = false;
                 // #pragma omp cancellation point parallel
 
-                while (my_ticket != now_serving % nid || grid_queue.empty())
+                while (tid != now_serving % nid || grid_queue.empty())
                 {
                     
 #pragma omp atomic read
                     now_serving = now_serving; // force a memory read to update value
-                                               // #pragma omp barrier                            // wait for other threads
+                                               // #pragma omp barrier
+                                                                        // wait for other threads
+                    if (found_solution){
+                        break;
+                    }
                 }
                 omp_set_lock(&queue_lock);
                 std::cout << "tid " << tid << ": acquire the lock" << std::endl;
