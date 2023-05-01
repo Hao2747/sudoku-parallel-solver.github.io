@@ -78,20 +78,36 @@ public:
         grid_queue.push_back(g);
         omp_lock_t queue_lock;
         omp_init_lock(&queue_lock);
-
+int next_ticket = 0; // next ticket number to be issued
+            int now_serving = 0; // current ticket being served
 // g.display_values();
-#pragma omp parallel shared(g, grid_size, grid_queue, found_solution) private(private_g, row, col, possible_grids, get_grid)
+#pragma omp parallel shared(g, grid_size, grid_queue, found_solution, now_serving, next_ticket) private(private_g, row, col, possible_grids, get_grid)
         {
             int tid = omp_get_thread_num();
+            int nid = omp_get_num_threads();
+            
+            int my_ticket;
+#pragma omp critical
+            {
+                my_ticket = next_ticket;
+                next_ticket++;
+            }
             while (!found_solution)
             {
                 // std::cout << "tid " << tid << ": still running" << std::endl;
 
                 get_grid = false;
                 // #pragma omp cancellation point parallel
-                omp_set_lock(&queue_lock);
-                    std::cout << "tid " << tid << ": acquire the lock" << std::endl;
 
+                while (my_ticket != now_serving % nid || grid_queue.empty())
+                {
+                    
+#pragma omp atomic read
+                    now_serving = now_serving; // force a memory read to update value
+                                               // #pragma omp barrier                            // wait for other threads
+                }
+                omp_set_lock(&queue_lock);
+                std::cout << "tid " << tid << ": acquire the lock" << std::endl;
                 if (!grid_queue.empty())
                 {
                     private_g = grid_queue.front();
@@ -101,8 +117,13 @@ public:
                     // private_g.display_values();
                     // std::cout << "only " << grid_queue.size() << " puzzles left in the queue" << std::endl;
                 }
+                //TODO: take it out of lock
+                #pragma omp atomic update
+                now_serving++;
+                #pragma omp flush(now_serving)
                 omp_unset_lock(&queue_lock);
-                    std::cout << "tid " << tid << ": release the lock" << std::endl;
+
+                std::cout << "tid " << tid << ": release the lock" << std::endl;
 
                 if (!get_grid)
                 {
@@ -121,8 +142,9 @@ public:
                             g = private_g;
                             // TODO: omp cancel
                             // #pragma omp cancel parallel
-                            // std::cout << "solution found!!!!" << std::endl;
+                            std::cout << "solution found!!!!" << std::endl;
                             found_solution = true;
+                            #pragma omp flush(found_solution)
                         }
                     }
                     break;
@@ -142,14 +164,14 @@ public:
                 }
                 if (!possible_grids.empty())
                 {
-                omp_set_lock(&queue_lock);
+                    omp_set_lock(&queue_lock);
 
                     {
                         grid_queue.insert(grid_queue.end(), possible_grids.begin(), possible_grids.end());
                     }
-                omp_unset_lock(&queue_lock);
-
+                    omp_unset_lock(&queue_lock);
                 }
+                std::cout << "tid " << tid << ": now serving: " << now_serving << "grid in queue" << grid_queue.size() << std::endl;
 
                 // for (auto &grid : grid_queue)
                 // {
