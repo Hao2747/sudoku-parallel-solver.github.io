@@ -90,17 +90,19 @@ public:
                 get_grid = false;
                 // #pragma omp cancellation point parallel
                 omp_set_lock(&queue_lock);
+                    std::cout << "tid " << tid << ": acquire the lock" << std::endl;
 
                 if (!grid_queue.empty())
                 {
                     private_g = grid_queue.front();
                     grid_queue.pop_front();
                     get_grid = true;
-                    // std::cout << "tid " << tid << ": get from queue" << std::endl;
+                    std::cout << "tid " << tid << ": get from queue" << std::endl;
                     // private_g.display_values();
                     // std::cout << "only " << grid_queue.size() << " puzzles left in the queue" << std::endl;
                 }
                 omp_unset_lock(&queue_lock);
+                    std::cout << "tid " << tid << ": release the lock" << std::endl;
 
                 if (!get_grid)
                 {
