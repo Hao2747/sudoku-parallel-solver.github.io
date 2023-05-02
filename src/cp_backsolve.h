@@ -1,4 +1,5 @@
 #include <vector>
+#include <utility>
 
 #include "grid.h"
 #include "solver.h"
@@ -24,7 +25,7 @@ private:
     std::vector<int> available_choices = g[row][col].get_available_choices(); // Initialize an empty vector to store indices of 1 bits
     
 
-    Grid private_g = g;
+    Grid private_g = std::move(g);
     for (dtype guess : available_choices)
     {
       private_g[row][col] = guess;

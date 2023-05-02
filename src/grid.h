@@ -198,6 +198,14 @@ public:
         }
     }
 
+    // Added to use boost, as it require trival destructor and trivial assign
+    // Add a default destructor
+    ~Grid() = default;
+// Define trivial copy and move assignment operators
+    Grid& operator=(const Grid&) = default;
+    // Grid& operator=(Grid&&) = default;
+Grid(Grid&& other) = default;
+
     GridRow &operator[](size_t idx) { return grid[idx]; }
 
     // Below function refers to geeks for geek

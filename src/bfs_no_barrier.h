@@ -68,7 +68,7 @@ public:
     Grid par_solve(Grid g) override
     {
         Grid private_g;
-        std::deque<Grid> grid_queue;
+        boost::lockfree::queue<Grid> grid_queue;
         int row, col;
         dtype guess;
         std::deque<Grid> possible_grids;
@@ -76,9 +76,9 @@ public:
         // bool get_grid;
         bool found_solution = false;
         omp_set_num_threads(4);
-        grid_queue.push_back(g);
-        omp_lock_t queue_lock;
-        omp_init_lock(&queue_lock);
+        grid_queue.push(g);
+        // // omp_lock_t queue_lock;
+        // // omp_init_lock(&queue_lock);
             int now_serving = 0; // current ticket being served
 // g.display_values();
             // bool status[grid_size] = {false};
@@ -90,37 +90,18 @@ public:
             int nid = omp_get_num_threads();         
             while (!found_solution)
             {
+                while(!grid_queue.pop(private_g))
+                    ;
 
-
-                while (tid != now_serving  || grid_queue.empty())
-                {
-                    
-#pragma omp atomic read
-                    now_serving = now_serving; // force a memory read to update value
-                                               // #pragma omp barrier
-                                                                        // wait for other threads
-                    if (found_solution){
-                        break;
-                    }
-                }
-                omp_set_lock(&queue_lock);
+                // // omp_set_lock(&queue_lock);
                 // std::cout << "tid " << tid << ": acquire the lock" << std::endl;
-                if (!grid_queue.empty())
-                {
-                    private_g = grid_queue.front();
-                    grid_queue.pop_front();
+                
                     // std::cout << "tid " << tid << ": get from queue" << std::endl;
                     // private_g.display_values();
                     // std::cout << "only " << grid_queue.size() << " puzzles left in the queue" << std::endl;
-                }
-                //TODO: take it out of lock
-                #pragma omp atomic update
-                now_serving++;
-                if(now_serving == nid){
-                    now_serving = 0;
-                }
-#pragma omp flush(now_serving)
-                omp_unset_lock(&queue_lock);
+                
+    
+                // // omp_unset_lock(&queue_lock);
 
 
                 
@@ -151,24 +132,24 @@ public:
                     // private_g.display_values();
                     if (private_g.is_possible())
                     {
-                        possible_grids.emplace_back(private_g);
+                        grid_queue.push(private_g);
                     }
                 }
-                if (!possible_grids.empty())
-                {
-                    omp_set_lock(&queue_lock);
+                // if (!possible_grids.empty())
+                // {
+                //     // // omp_set_lock(&queue_lock);
 
-                    {
-                        grid_queue.insert(grid_queue.end(), possible_grids.begin(), possible_grids.end());
-                    }
-                    omp_unset_lock(&queue_lock);
-                }
+                //     {
+                //         grid_queue.bulk_push(possible_grids.begin(), possible_grids.end());
+                //     }
+                //     // // omp_unset_lock(&queue_lock);
+                // }
               
 
                 possible_grids.clear();
             }
         }
-        omp_destroy_lock(&queue_lock);
+        // // omp_destroy_lock(&queue_lock);
         return g;
     }
 };
