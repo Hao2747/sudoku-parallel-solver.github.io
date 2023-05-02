@@ -27,24 +27,27 @@ int main(int argc, const char **argv)
   // if (options.mode == "both"){}
   for (auto mode : options.modes)
   {
-    t.reset();
+    double complete_time = 0;
     for (Grid grid : all_grids)
     {
       if (mode == "par")
       {
+        t.reset();
         solved_grid = solver->par_solve(grid);
       }
       else if (mode == "seq")
       {
+        t.reset();
         solved_grid = solver->seq_solve(grid);
       }
+      complete_time += t.elapsed();
       int ans = solved_grid.validate();
       if (ans == false)
       {
         std::cout << "This puzzle is solved incorrectly" << std::endl;
+        solved_grid.display_values();
       }
     }
-    double complete_time = t.elapsed();
     time_to_solve.emplace_back(complete_time);
   }
   if (time_to_solve.size() == 1){
