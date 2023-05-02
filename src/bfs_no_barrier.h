@@ -1,6 +1,7 @@
 #include <vector>
 #include <deque>
 #include <algorithm>
+#include <boost/lockfree/queue.hpp>
 
 #include "grid.h"
 #include "solver.h"
