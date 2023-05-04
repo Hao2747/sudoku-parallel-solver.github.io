@@ -7,6 +7,7 @@
 #include "bfs.h"
 #include "backsolve.h"
 #include "cp_no_barrier.h"
+#include "cp_hybrid.h"
 
 
 struct StartupOptions
@@ -41,6 +42,10 @@ StartupOptions parseOptions(int argc, const char **argv)
                 else if (strcmp(argv[i + 1], "Distribute_BFS") == 0)
                 {
                     rs.solver = new DistributeBFS();
+                }
+                else if (strcmp(argv[i + 1], "CP_Hybrid") == 0)
+                {
+                    rs.solver = new CP_Hybrid();
                 }
                 else if (strcmp(argv[i + 1], "DFS") == 0)
                 {

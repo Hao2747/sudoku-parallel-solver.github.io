@@ -44,8 +44,8 @@ public:
     Square(dtype val) : num(val) {}
 
     bool is_solved() { return (num <= UNASSIGNED) ? false : true; };
-    dtype& value() {
-
+    dtype &value()
+    {
         return num;
     }
 
@@ -196,6 +196,21 @@ public:
         for (row = 0; row < grid.size(); row++)
         {
             for (col = 0; col < grid.size(); col++)
+            {
+                if (!grid[row][col].is_solved())
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    bool find_next_empty_cell2(int &row, int &col)
+    {
+        for (; row < grid.size(); row++)
+        {
+            for (; col < grid.size(); col++)
             {
                 if (!grid[row][col].is_solved())
                 {
@@ -560,6 +575,7 @@ public:
           }
       }
 
+      #pragma omp parallel for schedule(dynamic)
       for (Coordinate cell : empty_cells) {
         int box_index = get_box_index(cell.r, cell.c);
         
@@ -585,8 +601,6 @@ public:
         //}
       }
 
-      //display_values();
-      //print_arrays();
     }
 
     std::vector<Coordinate> get_coords() {
@@ -614,10 +628,11 @@ public:
               }
           }
       }
+      
     }
     
     Coordinate pop_coord() {
-      
+      assert(private_coords.size() != 0);
       Coordinate curr = private_coords.back();
       private_coords.pop_back();
       int row = curr.r;
@@ -634,18 +649,19 @@ public:
       std::set<dtype> available_choice;
 
       std::vector<unsigned short> counts(grid_size+1, 0);
-      
+
       for(dtype d : row_[row]) {
         counts[d]++;
       }
+
       for(dtype d : col_[col]) {
         counts[d]++;
       }
-      
+
       for(dtype d : box_[box_index]) {
         counts[d]++;
       }
-      
+
       for(int i = 1; i < counts.size();i++) {
         if(counts[i] == 3) {
           available_choice.insert(i);
@@ -656,57 +672,50 @@ public:
       
     }
 
-    // void par_set_square_choices(std::vector<Coordinate> empty_cells)
-    // {
-      // init_row_col_box();
+    void par_configure_grid(std::vector<Coordinate> empty_cells)
+    {
+      init_row_col_box();
 
 
-      // for (size_t row = 0; row < grid_size; row++)
-      // {
-          // for (size_t col= 0; col < grid_size; col++)
-          // {
-              // if (grid[row][col].is_solved())
-              // {
-                // dtype seen_value = grid[row][col].value();
-                // row_[row].erase(seen_value);
-                // col_[col].erase(seen_value);
-                // box_[get_box_index(row, col)].erase(seen_value);
-                // square_lookup[row].emplace_back(&grid[row][col]);
-              // } else {
-                // square_lookup[row].emplace_back(nullptr);
-              // }
-          // }
-      // }
+      for (size_t row = 0; row < grid_size; row++)
+      {
+          for (size_t col= 0; col < grid_size; col++)
+          {
+              if (grid[row][col].is_solved())
+              {
+                dtype seen_value = grid[row][col].value();
+                row_[row].erase(seen_value);
+                col_[col].erase(seen_value);
+                box_[get_box_index(row, col)].erase(seen_value);
+                square_lookup[row].emplace_back(&grid[row][col]);
+              } else {
+                square_lookup[row].emplace_back(nullptr);
+              }
+          }
+      }
 
-      // #pragma omp parallel for schedule(dynamic)
-      // for (Coordinate cell : empty_cells) {
-        // int box_index = get_box_index(cell.r, cell.c);
+      #pragma omp parallel for schedule(dynamic)
+      for (Coordinate cell : empty_cells) {
+        int box_index = get_box_index(cell.r, cell.c);
         
-        // std::set<dtype> available_choice= box_[box_index];
+        std::set<dtype> available_choice= box_[box_index];
         
-        // for(dtype d : row_[cell.r]) {
-          // if(!available_choice.count(d)) {
-            // available_choice.erase(d);
-          // }
-        // }
-        // for(dtype d : col_[cell.c]) {
-          // if(!available_choice.count(d)) {
-            // available_choice.erase(d);
-          // }
-        // }
-        // // if(available_choice.size() == 1) {
-          // // //optimization for one element left
-          // // // for(dtype d : available_choice) {
-              // // // grid[cell.r][cell.c] = d;
-          // // // }
-        // // } else {
-          // grid[cell.r][cell.c].set_choices(available_choice);
-        // //}
-      // }
+        for(dtype d : row_[cell.r]) {
+          if(!available_choice.count(d)) {
+            available_choice.erase(d);
+          }
+        }
+        for(dtype d : col_[cell.c]) {
+          if(!available_choice.count(d)) {
+            available_choice.erase(d);
+          }
+        }
 
-      // //display_values();
-      // //print_arrays();
-    // }
+          grid[cell.r][cell.c].set_choices(available_choice);
+      }
+
+    }
+    
     
     void update_annotations(size_t row, size_t col, dtype guess) {
       row_[row].erase(guess);
