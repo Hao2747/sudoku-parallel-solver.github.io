@@ -43,9 +43,9 @@ public:
     }
     Square(dtype val) : num(val) {}
 
-    bool is_solved() { return (num == UNASSIGNED) ? false : true; };
-    dtype &value()
-    {
+    bool is_solved() { return (num <= UNASSIGNED) ? false : true; };
+    dtype& value() {
+
         return num;
     }
 

@@ -15,7 +15,8 @@ int main(int argc, const char **argv)
   Solver *solver;
   StartupOptions options = parseOptions(argc, argv);
   std::string input_file = "testbench/" + options.input_file;
-  file_to_grids(input_file, all_grids, options.grid_cnt);
+  std::cout << options.grid_cnt << std::endl;
+  handle_files(input_file, all_grids, options.grid_cnt);
   std::cout << all_grids.size() << " puzzles are being solved" << std::endl;
 
   solver = options.solver;
@@ -44,6 +45,7 @@ int main(int argc, const char **argv)
       int ans = solved_grid.validate();
       if (ans == false)
       {
+        solved_grid.display_values();
         std::cout << "This puzzle is solved incorrectly" << std::endl;
         solved_grid.display_values();
       }
@@ -58,5 +60,6 @@ int main(int argc, const char **argv)
     std::cout << "Parallel: Puzzle was solved " << time_to_solve[1]<< " s" << std::endl;
     std::cout << "Speedup: " << time_to_solve[0] / time_to_solve[1] << "x" << std::endl;
   }
+
   return 0;
 }
