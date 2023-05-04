@@ -68,7 +68,7 @@ public:
         std::deque<Grid> next_iter;
         int num_cores = omp_get_num_procs();
 
-        int RATIO = 3;
+        double RATIO = 1.5;
 
         
         possible.push_back(g);
@@ -80,7 +80,7 @@ public:
           next_iter.clear();
 
           //std::cout << possible.size() << std::endl;
-          if(possible.size() < (RATIO * num_cores)) {
+          if(possible.size() < (size_t)(RATIO * num_cores)) {
             #pragma omp parallel for schedule(dynamic) shared(possible) reduction(merge_grids : next_iter)
             for(int left = 0; left < possible.size(); left++ )
             { 

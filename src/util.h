@@ -191,7 +191,6 @@ void file_to_grids(std::string filename, std::vector<Grid> &grids, int grid_cnt 
 
 void handle_files(std::string make_rel_path, std::vector<Grid> &grids, int grid_cnt = -1) {
   if(make_rel_path.find("/large_grids/") != std::string::npos) {
-  //if(make_rel_path.contains("/large_grids/")) {
     grids.emplace_back(large_sudoku_to_grid(make_rel_path));
   } else {
     file_to_grids(make_rel_path, grids, grid_cnt);
