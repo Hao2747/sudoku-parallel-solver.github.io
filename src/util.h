@@ -2,6 +2,7 @@
 #include <string.h>
 #include "solver.h"
 #include "cp_backsolve.h"
+#include "cp_backsolve2.h"
 #include "bfs.h"
 #include "backsolve.h"
 #include "cp_no_barrier.h"
@@ -42,6 +43,10 @@ StartupOptions parseOptions(int argc, const char **argv)
                 else if (strcmp(argv[i + 1], "CP_Backsolve") == 0)
                 {
                     rs.solver = new CP_Backsolve();
+                }
+                else if (strcmp(argv[i + 1], "CP_Backsolve2") == 0)
+                {
+                    rs.solver = new CP_Backsolve2();
                 }
                 else if (strcmp(argv[i + 1], "CP_No_Barrier") == 0)
                 {

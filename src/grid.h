@@ -21,8 +21,7 @@ struct Coordinate
 {
     size_t r;
     size_t c;
-
-    
+  
 };
 
 
@@ -339,6 +338,10 @@ public:
     bool validate()
     {
         assert(block_len * block_len == grid_size);
+        if(grid.size() !=grid_size) {
+          std::cout << grid.size() << std::endl;
+          std::cout << grid.size() << std::endl;
+        }
         assert(grid.size() == grid_size);
         for (auto &gr : grid)
         {
@@ -459,6 +462,63 @@ public:
 
         return true;
     }
+    
+    
+    
+    bool is_possible(int row, int col)
+    {
+        assert(block_len * block_len == grid_size);
+        assert(grid.size() == grid_size);
+        for (auto &gr : grid)
+        {
+            assert(gr.size() == grid_size);
+        }
+
+        if (empty())
+        {
+            return false;
+        }
+
+        // check row contains all digits
+
+        if (!is_possible(grid[row].values()))
+        {
+            return false;
+        }
+
+
+        // checks if col contain all digits
+
+        {
+            std::vector<dtype> vec;
+            for (size_t row = 0; row < grid_size; row++)
+            {
+                vec.emplace_back(grid[row][col].value());
+            }
+
+            if (!is_possible(vec))
+            {
+                return false;
+            }
+        }
+
+        // block contains all the digits
+        for (size_t row_i= row/block_len * block_len; row_i < (row/block_len * block_len) + block_len; row_i ++)
+        {
+            for (size_t col_i =  col/block_len * block_len; col_i < col/block_len * block_len + block_len; col_i ++)
+            {
+                std::vector<dtype> vec;
+
+                vec.emplace_back(grid[row_i][col_i].value());
+                if (!is_possible(vec))
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
     size_t size()
     {
         return grid_size;
@@ -480,6 +540,7 @@ public:
         return row / block_len * block_len + col / block_len;
     }
 
+    //used in cp backsolve1
     void set_square_choices(std::vector<Coordinate> empty_cells)
     {
       init_row_col_box();
@@ -528,7 +589,11 @@ public:
       //print_arrays();
     }
 
-    void par_choices()
+    std::vector<Coordinate> get_coords() {
+      return private_coords;
+    }
+    
+    void seq_init_choices()
     {
       init_row_col_box();
 
@@ -549,6 +614,69 @@ public:
               }
           }
       }
+    }
+    
+    Coordinate pop_coord() {
+      
+      Coordinate curr = private_coords.back();
+      private_coords.pop_back();
+      int row = curr.r;
+      int col = curr.c; 
+      
+      square_lookup[row][col] = nullptr;
+      return curr;
+      
+    }
+    
+    std::set<dtype> find_choices_from_coord(size_t row, size_t col) {
+      int box_index = get_box_index(row, col);
+      
+      std::set<dtype> available_choice;
+
+      std::vector<unsigned short> counts(grid_size+1, 0);
+      
+      for(dtype d : row_[row]) {
+        counts[d]++;
+      }
+      for(dtype d : col_[col]) {
+        counts[d]++;
+      }
+      
+      for(dtype d : box_[box_index]) {
+        counts[d]++;
+      }
+      
+      for(int i = 1; i < counts.size();i++) {
+        if(counts[i] == 3) {
+          available_choice.insert(i);
+        }
+      }
+      
+      return available_choice;
+      
+    }
+
+    // void par_set_square_choices(std::vector<Coordinate> empty_cells)
+    // {
+      // init_row_col_box();
+
+
+      // for (size_t row = 0; row < grid_size; row++)
+      // {
+          // for (size_t col= 0; col < grid_size; col++)
+          // {
+              // if (grid[row][col].is_solved())
+              // {
+                // dtype seen_value = grid[row][col].value();
+                // row_[row].erase(seen_value);
+                // col_[col].erase(seen_value);
+                // box_[get_box_index(row, col)].erase(seen_value);
+                // square_lookup[row].emplace_back(&grid[row][col]);
+              // } else {
+                // square_lookup[row].emplace_back(nullptr);
+              // }
+          // }
+      // }
 
       // #pragma omp parallel for schedule(dynamic)
       // for (Coordinate cell : empty_cells) {
@@ -572,67 +700,13 @@ public:
               // // // grid[cell.r][cell.c] = d;
           // // // }
         // // } else {
-        // //  grid[cell.r][cell.c].set_choices(available_choice);
+          // grid[cell.r][cell.c].set_choices(available_choice);
         // //}
       // }
 
-      //display_values();
-      //print_arrays();
-    }
-
-    //find choices (just return choices)
-    //remove from list and find chcoices 
-    void par_set_square_choices(std::vector<Coordinate> empty_cells)
-    {
-      init_row_col_box();
-
-
-      for (size_t row = 0; row < grid_size; row++)
-      {
-          for (size_t col= 0; col < grid_size; col++)
-          {
-              if (grid[row][col].is_solved())
-              {
-                dtype seen_value = grid[row][col].value();
-                row_[row].erase(seen_value);
-                col_[col].erase(seen_value);
-                box_[get_box_index(row, col)].erase(seen_value);
-                square_lookup[row].emplace_back(&grid[row][col]);
-              } else {
-                square_lookup[row].emplace_back(nullptr);
-              }
-          }
-      }
-
-      #pragma omp parallel for schedule(dynamic)
-      for (Coordinate cell : empty_cells) {
-        int box_index = get_box_index(cell.r, cell.c);
-        
-        std::set<dtype> available_choice= box_[box_index];
-        
-        for(dtype d : row_[cell.r]) {
-          if(!available_choice.count(d)) {
-            available_choice.erase(d);
-          }
-        }
-        for(dtype d : col_[cell.c]) {
-          if(!available_choice.count(d)) {
-            available_choice.erase(d);
-          }
-        }
-        // if(available_choice.size() == 1) {
-          // //optimization for one element left
-          // // for(dtype d : available_choice) {
-              // // grid[cell.r][cell.c] = d;
-          // // }
-        // } else {
-          grid[cell.r][cell.c].set_choices(available_choice);
-        //}
-      }
-
-      //display_values();
-      //print_arrays();
-    }
+      // //display_values();
+      // //print_arrays();
+    // }
     
     void update_annotations(size_t row, size_t col, dtype guess) {
       row_[row].erase(guess);
