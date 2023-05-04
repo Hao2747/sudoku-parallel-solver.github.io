@@ -3,9 +3,11 @@
 #include "solver.h"
 #include "cp_backsolve.h"
 #include "cp_backsolve2.h"
+#include "distribute_bfs.h"
 #include "bfs.h"
 #include "backsolve.h"
 #include "cp_no_barrier.h"
+
 
 struct StartupOptions
 {
@@ -35,6 +37,10 @@ StartupOptions parseOptions(int argc, const char **argv)
                 if (strcmp(argv[i + 1], "BFS") == 0)
                 {
                     rs.solver = new BFS();
+                }
+                else if (strcmp(argv[i + 1], "Distribute_BFS") == 0)
+                {
+                    rs.solver = new DistributeBFS();
                 }
                 else if (strcmp(argv[i + 1], "DFS") == 0)
                 {
