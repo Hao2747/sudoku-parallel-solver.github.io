@@ -3,6 +3,9 @@
 #include "grid.h"
 #include "solver.h"
 #include <tuple>
+
+#ifndef BACKSOLVE_H
+#define BACKSOLVE_H
 class BackSolve : public Solver
 {
 private:
@@ -50,7 +53,7 @@ private:
 #pragma omp parallel shared(found_solution)
     {
       Grid private_g = g;
-      #pragma omp cancellation point parallel
+      // #pragma omp cancellation point parallel
       for (dtype guess = 1; guess <= g.size(); guess++)
       {
         private_g[row][col] = guess;
@@ -60,7 +63,7 @@ private:
           {
             g = private_g;
             found_solution = true;
-            #pragma omp cancel parallel
+            // #pragma omp cancel parallel
           }
         }
       }
@@ -86,3 +89,5 @@ public:
     return g;
   }
 };
+
+#endif
